@@ -25,7 +25,7 @@ func TestModel(t *testing.T) {
 		})
 
 		t.Run("Get", func(t *testing.T) {
-			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
+			u := &model.User{UUID: uuid.FromStringOrNil("abbad7a4-1922-4f11-aefd-f55b563816ce")}
 			newacc, err := account.Create(u, "test")
 			if !assert.NoError(t, err, "Failed to create account") {
 				return
@@ -36,8 +36,29 @@ func TestModel(t *testing.T) {
 			}
 		})
 
+		t.Run("GetAll", func(t *testing.T) {
+			u := &model.User{UUID: uuid.FromStringOrNil("9de1799e-e5be-40a2-9715-e7ba513426e4")}
+			accs, err := account.GetAll(u)
+			if !assert.NoError(t, err, "Failed to get accounts") {
+				return
+			}
+			assert.NotNil(t, accs)
+			assert.Empty(t, accs)
+
+			_, err = account.Create(u, "test")
+			if !assert.NoError(t, err) {
+				return
+			}
+
+			accs, err = account.GetAll(u)
+			if !assert.NoError(t, err, "Failed to get accounts") {
+				return
+			}
+			assert.Len(t, accs, 1)
+		})
+
 		t.Run("Update", func(t *testing.T) {
-			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
+			u := &model.User{UUID: uuid.FromStringOrNil("a6ab6796-08fb-4fb8-bd15-faa63e5378ee")}
 			newacc, err := account.Create(u, "test")
 			if !assert.NoError(t, err, "Failed to create account") {
 				return
@@ -55,7 +76,7 @@ func TestModel(t *testing.T) {
 		})
 
 		t.Run("Delete", func(t *testing.T) {
-			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
+			u := &model.User{UUID: uuid.FromStringOrNil("d5870983-d2ec-4f21-ad3a-37ff41163912")}
 			acc, err := account.Create(u, "test")
 			if !assert.NoError(t, err, "Failed to create account") {
 				return
@@ -69,7 +90,7 @@ func TestModel(t *testing.T) {
 		})
 
 		t.Run("GetAmount", func(t *testing.T) {
-			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
+			u := &model.User{UUID: uuid.FromStringOrNil("88d962b4-63eb-472b-8f61-63af9c0f3e19")}
 			acc, err := account.Create(u, "test")
 			if !assert.NoError(t, err, "Failed to create account") {
 				return
@@ -82,7 +103,7 @@ func TestModel(t *testing.T) {
 		})
 
 		t.Run("SetAmount", func(t *testing.T) {
-			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
+			u := &model.User{UUID: uuid.FromStringOrNil("58f3fb41-651d-4b14-b409-ef9f6c4f8fe9")}
 			acc, err := account.Create(u, "test")
 			if !assert.NoError(t, err, "Failed to create account") {
 				return

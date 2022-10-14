@@ -19,6 +19,13 @@ func Create(u *model.User, name string) (*model.Account, error) {
 	return acc, nil
 }
 
+// GetAll retrieves user's accounts from the DB.
+func GetAll(u *model.User) ([]*model.Account, error) {
+	accs := make([]*model.Account, 0)
+	db.DB.Find(&accs, "user_uuid = ?", u.UUID)
+	return accs, nil
+}
+
 // Get retrieves the account from the DB.
 func Get(uuid uuid.UUID) (*model.Account, error) {
 	var acc *model.Account
