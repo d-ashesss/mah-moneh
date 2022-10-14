@@ -30,3 +30,9 @@ type Account struct {
 func NewAccount(u *User, name string) *Account {
 	return &Account{Model: Model{UUID: uuid.Nil}, User: u, Name: name}
 }
+
+type AccountAmount struct {
+	AccountUUID uuid.UUID `gorm:"primaryKey"`
+	Account     *Account  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Amount      float64
+}

@@ -56,27 +56,83 @@ func TestModel(t *testing.T) {
 
 		t.Run("Delete", func(t *testing.T) {
 			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
-			newacc, err := account.Create(u, "test")
+			acc, err := account.Create(u, "test")
 			if !assert.NoError(t, err, "Failed to create account") {
 				return
 			}
-			err = account.Delete(newacc)
+			err = account.Delete(acc)
 			if !assert.NoError(t, err, "Failed to delete account") {
 				return
 			}
-			_, err = account.Get(newacc.UUID)
+			_, err = account.Get(acc.UUID)
 			assert.ErrorContains(t, err, "not found", "Deleted account should not be found")
+		})
+
+		t.Run("GetAmount", func(t *testing.T) {
+			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
+			acc, err := account.Create(u, "test")
+			if !assert.NoError(t, err, "Failed to create account") {
+				return
+			}
+			a, err := account.GetAmount(acc)
+			if !assert.NoError(t, err, "Failed to get amount") {
+				return
+			}
+			assert.Equal(t, 0., a.Amount, "Unexpected amount value")
+		})
+
+		t.Run("SetAmount", func(t *testing.T) {
+			u := &model.User{UUID: uuid.FromStringOrNil("3d8d0573-1240-46c3-bacb-3c172047eb6a")}
+			acc, err := account.Create(u, "test")
+			if !assert.NoError(t, err, "Failed to create account") {
+				return
+			}
+			err = account.SetAmount(acc, 10)
+			if !assert.NoError(t, err, "Failed to set amount") {
+				return
+			}
+			a, err := account.GetAmount(acc)
+			if !assert.NoError(t, err, "Failed to get amount") {
+				return
+			}
+			if !assert.Equal(t, float64(10), a.Amount, "Unexpected amount value") {
+				return
+			}
+			err = account.SetAmount(acc, 20)
+			if !assert.NoError(t, err, "Failed to set amount") {
+				return
+			}
+			a, err = account.GetAmount(acc)
+			if !assert.NoError(t, err, "Failed to get amount") {
+				return
+			}
+			if !assert.Equal(t, float64(20), a.Amount, "Unexpected amount value") {
+				return
+			}
 		})
 	})
 }
 
 func createDb(t *testing.T) {
 	t.Helper()
-	err := db.DB.Migrator().DropTable(&model.Account{})
+	var err error
+
+	err = db.DB.Migrator().DropTable(&model.AccountAmount{})
 	if err != nil {
 		t.Fatalf("[main] migrate: %v", err)
 	}
+
+	err = db.DB.Migrator().DropTable(&model.Account{})
+	if err != nil {
+		t.Fatalf("[main] migrate: %v", err)
+	}
+
 	err = db.DB.Migrator().CreateTable(&model.Account{})
+	if err != nil {
+		t.Fatalf("[main] migrate: %v", err)
+	}
+
+	err = db.DB.Migrator().CreateTable(&model.AccountAmount{})
 	if err != nil {
 		t.Fatalf("[main] migrate: %v", err)
 	}
