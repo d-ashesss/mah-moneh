@@ -4,6 +4,7 @@ import (
 	"github.com/d-ashesss/mah-moneh/db"
 	"github.com/d-ashesss/mah-moneh/model"
 	"github.com/d-ashesss/mah-moneh/model/account"
+	"github.com/d-ashesss/mah-moneh/model/capital"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -130,6 +131,42 @@ func TestModel(t *testing.T) {
 			if !assert.Equal(t, float64(20), a.Amount, "Unexpected amount value") {
 				return
 			}
+		})
+	})
+
+	t.Run("Capital", func(t *testing.T) {
+		assertCapital := func(t *testing.T, u *model.User, amount float64) {
+			t.Helper()
+			c, err := capital.Get(u)
+			if !assert.NoError(t, err, "Failed to get capital") {
+				return
+			}
+			if !assert.Equal(t, amount, c.Amount, "Unexpected capital amount value") {
+				return
+			}
+		}
+
+		t.Run("Get", func(t *testing.T) {
+			u := &model.User{UUID: uuid.FromStringOrNil("c748a4ea-124e-4832-bfeb-dd529f4fbb9c")}
+			acc1, err := account.Create(u, "first")
+			if !assert.NoError(t, err, "Failed to create account") {
+				return
+			}
+			err = account.SetAmount(acc1, 10)
+			if !assert.NoError(t, err, "Failed to set amount") {
+				return
+			}
+			assertCapital(t, u, 10)
+
+			acc2, err := account.Create(u, "second")
+			if !assert.NoError(t, err, "Failed to create account") {
+				return
+			}
+			err = account.SetAmount(acc2, 15)
+			if !assert.NoError(t, err, "Failed to set amount") {
+				return
+			}
+			assertCapital(t, u, 25)
 		})
 	})
 }

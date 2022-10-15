@@ -36,3 +36,7 @@ type AccountAmount struct {
 	Account     *Account  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Amount      float64
 }
+
+type Capital struct {
+	Amount float64
+}
