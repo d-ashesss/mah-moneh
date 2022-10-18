@@ -5,6 +5,7 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // AccountStore is an interface for accounts DB API.
@@ -19,6 +20,10 @@ type AccountStore interface {
 	GetAccount(ctx context.Context, UUID uuid.UUID) (*Account, error)
 	// GetUserAccounts retrieves all user accounts.
 	GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error)
+	// SetAccountAmount sets the amount of funds on the account.
+	SetAccountAmount(ctx context.Context, acc *Account, amount float64) error
+	// GetAccountAmounts retrieves all the amounts of funds on the account.
+	GetAccountAmounts(ctx context.Context, acc *Account) (AmountCollection, error)
 }
 
 // gormStore is GORM implementation of AccountStore.
@@ -57,4 +62,18 @@ func (s *gormStore) GetUserAccounts(ctx context.Context, u *users.User) (Account
 		return nil, err
 	}
 	return accs, nil
+}
+
+func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, amount float64) error {
+	a := &Amount{Account: acc, Amount: amount}
+	return s.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "account_uuid"}},
+		DoUpdates: clause.AssignmentColumns([]string{"amount"}),
+	}).Save(a).Error
+}
+
+func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
+	amounts := make(AmountCollection, 0)
+	s.db.WithContext(ctx).Find(&amounts, "account_uuid = ?", acc.UUID)
+	return amounts, nil
 }

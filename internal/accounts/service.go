@@ -35,3 +35,11 @@ func (s *Accounts) GetAccount(ctx context.Context, UUID uuid.UUID) (*Account, er
 func (s *Accounts) GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error) {
 	return s.db.GetUserAccounts(ctx, u)
 }
+
+func (s *Accounts) SetAccountAmount(ctx context.Context, acc *Account, amount float64) error {
+	return s.db.SetAccountAmount(ctx, acc, amount)
+}
+
+func (s *Accounts) GetAccountAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
+	return s.db.GetAccountAmounts(ctx, acc)
+}

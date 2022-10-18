@@ -70,6 +70,29 @@ func (_m *AccountStore) GetAccount(ctx context.Context, UUID uuid.UUID) (*accoun
 	return r0, r1
 }
 
+// GetAccountAmounts provides a mock function with given fields: ctx, acc
+func (_m *AccountStore) GetAccountAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error) {
+	ret := _m.Called(ctx, acc)
+
+	var r0 accounts.AmountCollection
+	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account) accounts.AmountCollection); ok {
+		r0 = rf(ctx, acc)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(accounts.AmountCollection)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *accounts.Account) error); ok {
+		r1 = rf(ctx, acc)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUserAccounts provides a mock function with given fields: ctx, u
 func (_m *AccountStore) GetUserAccounts(ctx context.Context, u *users.User) (accounts.AccountCollection, error) {
 	ret := _m.Called(ctx, u)
@@ -91,6 +114,20 @@ func (_m *AccountStore) GetUserAccounts(ctx context.Context, u *users.User) (acc
 	}
 
 	return r0, r1
+}
+
+// SetAccountAmount provides a mock function with given fields: ctx, acc, a
+func (_m *AccountStore) SetAccountAmount(ctx context.Context, acc *accounts.Account, a float64) error {
+	ret := _m.Called(ctx, acc, a)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, float64) error); ok {
+		r0 = rf(ctx, acc, a)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // UpdateAccount provides a mock function with given fields: ctx, acc
