@@ -12,5 +12,10 @@ type Account struct {
 	Name string      `gorm:"notNull"`
 }
 
+// NewAccount initializes a new account.
+func NewAccount(u *users.User, name string) *Account {
+	return &Account{User: u, Name: name}
+}
+
 // AccountCollection represents a collection of account entities.
 type AccountCollection []*Account
