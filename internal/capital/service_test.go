@@ -27,14 +27,15 @@ func (ts *CapitalTestSuite) TestGetCapital() {
 	acc := &accounts.Account{}
 	accs := accounts.AccountCollection{acc}
 	amounts := accounts.AmountCollection{
-		&accounts.Amount{Amount: 10},
-		&accounts.Amount{Amount: 12},
+		"usd": &accounts.Amount{CurrencyCode: "usd", Amount: 10},
+		"eur": &accounts.Amount{CurrencyCode: "eur", Amount: 12},
 	}
 	ts.accounts.On("GetUserAccounts", ctx, u).Return(accs, nil)
 	ts.accounts.On("GetAccountAmounts", ctx, acc).Return(amounts, nil)
 	c, err := ts.srv.GetCapital(ctx, u)
 	ts.Require().NoError(err, "Failed to get capital.")
-	ts.Equal(22., c.Amount)
+	ts.Equal(10., c.Amounts["usd"])
+	ts.Equal(12., c.Amounts["eur"])
 }
 
 func TestCapitalSuite(t *testing.T) {

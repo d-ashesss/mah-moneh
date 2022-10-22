@@ -24,14 +24,14 @@ func (s *Service) GetCapital(ctx context.Context, u *users.User) (*Capital, erro
 	if err != nil {
 		return nil, err
 	}
-	c := &Capital{}
+	c := New()
 	for _, acc := range accs {
 		amounts, err := s.accounts.GetAccountAmounts(ctx, acc)
 		if err != nil {
 			return nil, err
 		}
-		for _, a := range amounts {
-			c.Amount += a.Amount
+		for currency, a := range amounts {
+			c.Amounts[currency] += a.Amount
 		}
 	}
 	return c, nil

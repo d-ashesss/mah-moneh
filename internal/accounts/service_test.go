@@ -79,10 +79,10 @@ func (s *ServiceTestSuite) TestGetUserAccounts() {
 func (s *ServiceTestSuite) TestSetAccountAmount() {
 	ctx := context.Background()
 	acc := &accounts.Account{}
-	s.store.On("SetAccountAmount", ctx, acc, 10.).
+	s.store.On("SetAccountAmount", ctx, acc, "usd", 10.).
 		Return(nil).Once()
 
-	err := s.srv.SetAccountAmount(ctx, acc, 10)
+	err := s.srv.SetAccountAmount(ctx, acc, "usd", 10)
 	s.Require().NoError(err, "Failed to set amount on the account.")
 }
 

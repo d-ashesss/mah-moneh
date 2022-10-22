@@ -23,10 +23,11 @@ type AccountCollection []*Account
 
 // Amount represents account's amount entity.
 type Amount struct {
-	AccountUUID uuid.UUID `gorm:"primaryKey"`
-	Account     *Account  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Amount      float64
+	AccountUUID  uuid.UUID `gorm:"primaryKey"`
+	Account      *Account  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	CurrencyCode string    `gorm:"primaryKey;notNull"`
+	Amount       float64
 }
 
 // AmountCollection represents a collection of account's amounts.
-type AmountCollection []*Amount
+type AmountCollection map[string]*Amount

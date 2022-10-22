@@ -129,21 +129,29 @@ func (s *AccountsTestSuite) TestSetAccountAmount() {
 	u := s.createTestingUser()
 	acc := s.createTestingAccount(u, "test-set-account-amount")
 
-	err := s.srv.SetAccountAmount(context.Background(), acc, 10.99)
+	err := s.srv.SetAccountAmount(context.Background(), acc, "usd", 10.99)
 	s.Require().NoError(err, "Failed to set amount on the account.")
 
 	amount := &accounts.Amount{}
-	err = s.db.First(amount, "account_uuid = ?", acc.UUID).Error
+	err = s.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "usd").Error
 	s.Require().NoError(err, "Failed to get amount.")
 	s.Equal(10.99, amount.Amount, "Invalid amount on account.")
 
-	err = s.srv.SetAccountAmount(context.Background(), acc, 12)
+	err = s.srv.SetAccountAmount(context.Background(), acc, "usd", 12)
+	s.Require().NoError(err, "Failed to set amount on the account.")
+
+	err = s.srv.SetAccountAmount(context.Background(), acc, "eur", 21)
 	s.Require().NoError(err, "Failed to set amount on the account.")
 
 	amount = &accounts.Amount{}
-	err = s.db.First(amount, "account_uuid = ?", acc.UUID).Error
+	err = s.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "usd").Error
 	s.Require().NoError(err, "Failed to get amount.")
 	s.Equal(12., amount.Amount, "Invalid amount on account.")
+
+	amount = &accounts.Amount{}
+	err = s.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "eur").Error
+	s.Require().NoError(err, "Failed to get amount.")
+	s.Equal(21., amount.Amount, "Invalid amount on account.")
 }
 
 func (s *AccountsTestSuite) TestGetAccountAmounts() {
@@ -154,14 +162,19 @@ func (s *AccountsTestSuite) TestGetAccountAmounts() {
 	s.Require().NoError(err, "Failed to get amounts on the account.")
 	s.Len(amounts, 0, "Invalid set of amounts returned.")
 
-	amount := &accounts.Amount{Account: acc, Amount: 11.5}
+	amount := &accounts.Amount{Account: acc, CurrencyCode: "usd", Amount: 11.5}
+	err = s.db.Save(amount).Error
+	s.Require().NoError(err, "Failed to set amount on the account.")
+
+	amount = &accounts.Amount{Account: acc, CurrencyCode: "eur", Amount: 27.3}
 	err = s.db.Save(amount).Error
 	s.Require().NoError(err, "Failed to set amount on the account.")
 
 	amounts, err = s.srv.GetAccountAmounts(context.Background(), acc)
 	s.Require().NoError(err, "Failed to get amounts on the account.")
-	s.Len(amounts, 1, "Invalid set of amounts returned.")
-	s.Equal(11.5, amounts[0].Amount, "Invalid amount on account.")
+	s.Len(amounts, 2, "Invalid set of amounts returned.")
+	s.Equal(11.5, amounts["usd"].Amount, "Invalid amount on account.")
+	s.Equal(27.3, amounts["eur"].Amount, "Invalid amount on account.")
 }
 
 func (s *AccountsTestSuite) createTestingUser() *users.User {

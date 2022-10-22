@@ -21,7 +21,7 @@ type AccountStore interface {
 	// GetUserAccounts retrieves all user accounts.
 	GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error)
 	// SetAccountAmount sets the amount of funds on the account.
-	SetAccountAmount(ctx context.Context, acc *Account, amount float64) error
+	SetAccountAmount(ctx context.Context, acc *Account, currency string, amount float64) error
 	// GetAccountAmounts retrieves all the amounts of funds on the account.
 	GetAccountAmounts(ctx context.Context, acc *Account) (AmountCollection, error)
 }
@@ -64,16 +64,22 @@ func (s *gormStore) GetUserAccounts(ctx context.Context, u *users.User) (Account
 	return accs, nil
 }
 
-func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, amount float64) error {
-	a := &Amount{Account: acc, Amount: amount}
+func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, currency string, amount float64) error {
+	a := &Amount{Account: acc, CurrencyCode: currency, Amount: amount}
 	return s.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "account_uuid"}},
+		Columns:   []clause.Column{{Name: "account_uuid"}, {Name: "currency_code"}},
 		DoUpdates: clause.AssignmentColumns([]string{"amount"}),
 	}).Save(a).Error
 }
 
 func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
-	amounts := make(AmountCollection, 0)
-	s.db.WithContext(ctx).Find(&amounts, "account_uuid = ?", acc.UUID)
-	return amounts, nil
+	amounts := make([]*Amount, 0)
+	if err := s.db.WithContext(ctx).Find(&amounts, "account_uuid = ?", acc.UUID).Error; err != nil {
+		return nil, err
+	}
+	c := make(AmountCollection)
+	for _, a := range amounts {
+		c[a.CurrencyCode] = a
+	}
+	return c, nil
 }
