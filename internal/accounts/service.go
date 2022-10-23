@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
+	"time"
 )
 
 // Accounts is a service responsible for managing accounts.
@@ -36,10 +37,12 @@ func (s *Accounts) GetUserAccounts(ctx context.Context, u *users.User) (AccountC
 	return s.db.GetUserAccounts(ctx, u)
 }
 
-func (s *Accounts) SetAccountAmount(ctx context.Context, acc *Account, currency string, amount float64) error {
-	return s.db.SetAccountAmount(ctx, acc, currency, amount)
+func (s *Accounts) SetAccountCurrentAmount(ctx context.Context, acc *Account, currency string, amount float64) error {
+	month := time.Now().Format("2006-01")
+	return s.db.SetAccountAmount(ctx, acc, month, currency, amount)
 }
 
-func (s *Accounts) GetAccountAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
-	return s.db.GetAccountAmounts(ctx, acc)
+func (s *Accounts) GetAccountCurrentAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
+	month := time.Now().Format("2006-01")
+	return s.db.GetAccountAmounts(ctx, acc, month)
 }

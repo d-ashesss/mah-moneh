@@ -76,23 +76,23 @@ func (s *ServiceTestSuite) TestGetUserAccounts() {
 	s.NotNil(accs)
 }
 
-func (s *ServiceTestSuite) TestSetAccountAmount() {
+func (s *ServiceTestSuite) TestSetAccountCurrentAmount() {
 	ctx := context.Background()
 	acc := &accounts.Account{}
-	s.store.On("SetAccountAmount", ctx, acc, "usd", 10.).
+	s.store.On("SetAccountAmount", ctx, acc, mock.AnythingOfType("string"), "usd", 10.).
 		Return(nil).Once()
 
-	err := s.srv.SetAccountAmount(ctx, acc, "usd", 10)
+	err := s.srv.SetAccountCurrentAmount(ctx, acc, "usd", 10)
 	s.Require().NoError(err, "Failed to set amount on the account.")
 }
 
-func (s *ServiceTestSuite) TestGetAccountAmounts() {
+func (s *ServiceTestSuite) TestGetAccountCurrentAmounts() {
 	ctx := context.Background()
 	acc := &accounts.Account{}
-	s.store.On("GetAccountAmounts", ctx, acc).
+	s.store.On("GetAccountAmounts", ctx, acc, mock.AnythingOfType("string")).
 		Return(accounts.AmountCollection{}, nil).Once()
 
-	amounts, err := s.srv.GetAccountAmounts(ctx, acc)
+	amounts, err := s.srv.GetAccountCurrentAmounts(ctx, acc)
 	s.Require().NoError(err, "Failed to get amounts of the account.")
 	s.NotNil(amounts)
 }

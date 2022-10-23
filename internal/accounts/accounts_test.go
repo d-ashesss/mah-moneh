@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm/logger"
 	"os"
 	"testing"
+	"time"
 )
 
 type AccountsTestSuite struct {
@@ -129,28 +130,30 @@ func (s *AccountsTestSuite) TestSetAccountAmount() {
 	u := s.createTestingUser()
 	acc := s.createTestingAccount(u, "test-set-account-amount")
 
-	err := s.srv.SetAccountAmount(context.Background(), acc, "usd", 10.99)
-	s.Require().NoError(err, "Failed to set amount on the account.")
+	err := s.srv.SetAccountCurrentAmount(context.Background(), acc, "usd", 10.99)
+	s.Require().NoError(err, "Failed to set USD amount on the account.")
 
 	amount := &accounts.Amount{}
 	err = s.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "usd").Error
-	s.Require().NoError(err, "Failed to get amount.")
+	s.Require().NoError(err, "Failed to get USD amount.")
 	s.Equal(10.99, amount.Amount, "Invalid amount on account.")
 
-	err = s.srv.SetAccountAmount(context.Background(), acc, "usd", 12)
-	s.Require().NoError(err, "Failed to set amount on the account.")
+	err = s.srv.SetAccountCurrentAmount(context.Background(), acc, "usd", 12)
+	s.Require().NoError(err, "Failed to change USD amount on the account.")
 
-	err = s.srv.SetAccountAmount(context.Background(), acc, "eur", 21)
-	s.Require().NoError(err, "Failed to set amount on the account.")
+	err = s.srv.SetAccountCurrentAmount(context.Background(), acc, "eur", 21)
+	s.Require().NoError(err, "Failed to set EUR amount on the account.")
+
+	month := time.Now().Format("2006-01")
 
 	amount = &accounts.Amount{}
-	err = s.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "usd").Error
-	s.Require().NoError(err, "Failed to get amount.")
+	err = s.db.First(amount, "account_uuid = ? AND year_month = ? AND currency_code = ?", acc.UUID, month, "usd").Error
+	s.Require().NoError(err, "Failed to get updated USD amount.")
 	s.Equal(12., amount.Amount, "Invalid amount on account.")
 
 	amount = &accounts.Amount{}
-	err = s.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "eur").Error
-	s.Require().NoError(err, "Failed to get amount.")
+	err = s.db.First(amount, "account_uuid = ? AND year_month = ? AND currency_code = ?", acc.UUID, month, "eur").Error
+	s.Require().NoError(err, "Failed to get EUR amount.")
 	s.Equal(21., amount.Amount, "Invalid amount on account.")
 }
 
@@ -158,21 +161,27 @@ func (s *AccountsTestSuite) TestGetAccountAmounts() {
 	u := s.createTestingUser()
 	acc := s.createTestingAccount(u, "test-set-account-amount")
 
-	amounts, err := s.srv.GetAccountAmounts(context.Background(), acc)
+	amounts, err := s.srv.GetAccountCurrentAmounts(context.Background(), acc)
 	s.Require().NoError(err, "Failed to get amounts on the account.")
 	s.Len(amounts, 0, "Invalid set of amounts returned.")
 
-	amount := &accounts.Amount{Account: acc, CurrencyCode: "usd", Amount: 11.5}
+	month := time.Now().Format("2006-01")
+
+	amount := &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "usd", Amount: 11.5}
 	err = s.db.Save(amount).Error
 	s.Require().NoError(err, "Failed to set amount on the account.")
 
-	amount = &accounts.Amount{Account: acc, CurrencyCode: "eur", Amount: 27.3}
+	amount = &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "eur", Amount: 27.3}
 	err = s.db.Save(amount).Error
 	s.Require().NoError(err, "Failed to set amount on the account.")
 
-	amounts, err = s.srv.GetAccountAmounts(context.Background(), acc)
+	amount = &accounts.Amount{Account: acc, YearMonth: "2000-01", CurrencyCode: "usd", Amount: 5.}
+	err = s.db.Save(amount).Error
+	s.Require().NoError(err, "Failed to set amount on the account.")
+
+	amounts, err = s.srv.GetAccountCurrentAmounts(context.Background(), acc)
 	s.Require().NoError(err, "Failed to get amounts on the account.")
-	s.Len(amounts, 2, "Invalid set of amounts returned.")
+	s.Require().Len(amounts, 2, "Invalid set of amounts returned.")
 	s.Equal(11.5, amounts["usd"].Amount, "Invalid amount on account.")
 	s.Equal(27.3, amounts["eur"].Amount, "Invalid amount on account.")
 }

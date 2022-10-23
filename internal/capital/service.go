@@ -8,7 +8,7 @@ import (
 
 type AccountsService interface {
 	GetUserAccounts(ctx context.Context, u *users.User) (accounts.AccountCollection, error)
-	GetAccountAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error)
+	GetAccountCurrentAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error)
 }
 
 type Service struct {
@@ -26,7 +26,7 @@ func (s *Service) GetCapital(ctx context.Context, u *users.User) (*Capital, erro
 	}
 	c := New()
 	for _, acc := range accs {
-		amounts, err := s.accounts.GetAccountAmounts(ctx, acc)
+		amounts, err := s.accounts.GetAccountCurrentAmounts(ctx, acc)
 		if err != nil {
 			return nil, err
 		}

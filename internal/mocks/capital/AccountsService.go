@@ -17,8 +17,8 @@ type AccountsService struct {
 	mock.Mock
 }
 
-// GetAccountAmounts provides a mock function with given fields: ctx, acc
-func (_m *AccountsService) GetAccountAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error) {
+// GetAccountCurrentAmounts provides a mock function with given fields: ctx, acc
+func (_m *AccountsService) GetAccountCurrentAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error) {
 	ret := _m.Called(ctx, acc)
 
 	var r0 accounts.AmountCollection

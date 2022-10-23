@@ -70,13 +70,13 @@ func (_m *AccountStore) GetAccount(ctx context.Context, UUID uuid.UUID) (*accoun
 	return r0, r1
 }
 
-// GetAccountAmounts provides a mock function with given fields: ctx, acc
-func (_m *AccountStore) GetAccountAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error) {
-	ret := _m.Called(ctx, acc)
+// GetAccountAmounts provides a mock function with given fields: ctx, acc, month
+func (_m *AccountStore) GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.AmountCollection, error) {
+	ret := _m.Called(ctx, acc, month)
 
 	var r0 accounts.AmountCollection
-	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account) accounts.AmountCollection); ok {
-		r0 = rf(ctx, acc)
+	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string) accounts.AmountCollection); ok {
+		r0 = rf(ctx, acc, month)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(accounts.AmountCollection)
@@ -84,8 +84,8 @@ func (_m *AccountStore) GetAccountAmounts(ctx context.Context, acc *accounts.Acc
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *accounts.Account) error); ok {
-		r1 = rf(ctx, acc)
+	if rf, ok := ret.Get(1).(func(context.Context, *accounts.Account, string) error); ok {
+		r1 = rf(ctx, acc, month)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -116,13 +116,13 @@ func (_m *AccountStore) GetUserAccounts(ctx context.Context, u *users.User) (acc
 	return r0, r1
 }
 
-// SetAccountAmount provides a mock function with given fields: ctx, acc, currency, amount
-func (_m *AccountStore) SetAccountAmount(ctx context.Context, acc *accounts.Account, currency string, amount float64) error {
-	ret := _m.Called(ctx, acc, currency, amount)
+// SetAccountAmount provides a mock function with given fields: ctx, acc, month, currency, amount
+func (_m *AccountStore) SetAccountAmount(ctx context.Context, acc *accounts.Account, month string, currency string, amount float64) error {
+	ret := _m.Called(ctx, acc, month, currency, amount)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string, float64) error); ok {
-		r0 = rf(ctx, acc, currency, amount)
+	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string, string, float64) error); ok {
+		r0 = rf(ctx, acc, month, currency, amount)
 	} else {
 		r0 = ret.Error(0)
 	}

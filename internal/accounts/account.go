@@ -25,6 +25,7 @@ type AccountCollection []*Account
 type Amount struct {
 	AccountUUID  uuid.UUID `gorm:"primaryKey"`
 	Account      *Account  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	YearMonth    string    `gorm:"primaryKey;type:varchar(7);notNull"`
 	CurrencyCode string    `gorm:"primaryKey;notNull"`
 	Amount       float64
 }

@@ -31,7 +31,7 @@ func (ts *CapitalTestSuite) TestGetCapital() {
 		"eur": &accounts.Amount{CurrencyCode: "eur", Amount: 12},
 	}
 	ts.accounts.On("GetUserAccounts", ctx, u).Return(accs, nil)
-	ts.accounts.On("GetAccountAmounts", ctx, acc).Return(amounts, nil)
+	ts.accounts.On("GetAccountCurrentAmounts", ctx, acc).Return(amounts, nil)
 	c, err := ts.srv.GetCapital(ctx, u)
 	ts.Require().NoError(err, "Failed to get capital.")
 	ts.Equal(10., c.Amounts["usd"])
