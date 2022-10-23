@@ -86,6 +86,17 @@ func (s *ServiceTestSuite) TestSetAccountCurrentAmount() {
 	s.Require().NoError(err, "Failed to set amount on the account.")
 }
 
+func (s *ServiceTestSuite) TestGetAccountAmounts() {
+	ctx := context.Background()
+	acc := &accounts.Account{}
+	s.store.On("GetAccountAmounts", ctx, acc, "2010-01").
+		Return(accounts.AmountCollection{}, nil).Once()
+
+	amounts, err := s.srv.GetAccountAmounts(ctx, acc, "2010-01")
+	s.Require().NoError(err, "Failed to get amounts of the account.")
+	s.NotNil(amounts)
+}
+
 func (s *ServiceTestSuite) TestGetAccountCurrentAmounts() {
 	ctx := context.Background()
 	acc := &accounts.Account{}

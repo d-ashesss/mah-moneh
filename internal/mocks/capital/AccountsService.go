@@ -17,13 +17,13 @@ type AccountsService struct {
 	mock.Mock
 }
 
-// GetAccountCurrentAmounts provides a mock function with given fields: ctx, acc
-func (_m *AccountsService) GetAccountCurrentAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error) {
-	ret := _m.Called(ctx, acc)
+// GetAccountAmounts provides a mock function with given fields: ctx, acc, month
+func (_m *AccountsService) GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.AmountCollection, error) {
+	ret := _m.Called(ctx, acc, month)
 
 	var r0 accounts.AmountCollection
-	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account) accounts.AmountCollection); ok {
-		r0 = rf(ctx, acc)
+	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string) accounts.AmountCollection); ok {
+		r0 = rf(ctx, acc, month)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(accounts.AmountCollection)
@@ -31,8 +31,8 @@ func (_m *AccountsService) GetAccountCurrentAmounts(ctx context.Context, acc *ac
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *accounts.Account) error); ok {
-		r1 = rf(ctx, acc)
+	if rf, ok := ret.Get(1).(func(context.Context, *accounts.Account, string) error); ok {
+		r1 = rf(ctx, acc, month)
 	} else {
 		r1 = ret.Error(1)
 	}

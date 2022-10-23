@@ -144,7 +144,7 @@ func (s *AccountsTestSuite) TestSetAccountAmount() {
 	err = s.srv.SetAccountCurrentAmount(context.Background(), acc, "eur", 21)
 	s.Require().NoError(err, "Failed to set EUR amount on the account.")
 
-	month := time.Now().Format("2006-01")
+	month := time.Now().Format(accounts.FmtYearMonth)
 
 	amount = &accounts.Amount{}
 	err = s.db.First(amount, "account_uuid = ? AND year_month = ? AND currency_code = ?", acc.UUID, month, "usd").Error
@@ -157,7 +157,7 @@ func (s *AccountsTestSuite) TestSetAccountAmount() {
 	s.Equal(21., amount.Amount, "Invalid amount on account.")
 }
 
-func (s *AccountsTestSuite) TestGetAccountAmounts() {
+func (s *AccountsTestSuite) TestGetAccountCurrentAmounts() {
 	u := s.createTestingUser()
 	acc := s.createTestingAccount(u, "test-set-account-amount")
 
@@ -165,7 +165,7 @@ func (s *AccountsTestSuite) TestGetAccountAmounts() {
 	s.Require().NoError(err, "Failed to get amounts on the account.")
 	s.Len(amounts, 0, "Invalid set of amounts returned.")
 
-	month := time.Now().Format("2006-01")
+	month := time.Now().Format(accounts.FmtYearMonth)
 
 	amount := &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "usd", Amount: 11.5}
 	err = s.db.Save(amount).Error

@@ -8,7 +8,7 @@ import (
 
 type AccountsService interface {
 	GetUserAccounts(ctx context.Context, u *users.User) (accounts.AccountCollection, error)
-	GetAccountCurrentAmounts(ctx context.Context, acc *accounts.Account) (accounts.AmountCollection, error)
+	GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.AmountCollection, error)
 }
 
 type Service struct {
@@ -19,14 +19,14 @@ func NewService(as AccountsService) *Service {
 	return &Service{accounts: as}
 }
 
-func (s *Service) GetCapital(ctx context.Context, u *users.User) (*Capital, error) {
+func (s *Service) GetCapital(ctx context.Context, u *users.User, month string) (*Capital, error) {
 	accs, err := s.accounts.GetUserAccounts(ctx, u)
 	if err != nil {
 		return nil, err
 	}
 	c := New()
 	for _, acc := range accs {
-		amounts, err := s.accounts.GetAccountCurrentAmounts(ctx, acc)
+		amounts, err := s.accounts.GetAccountAmounts(ctx, acc, month)
 		if err != nil {
 			return nil, err
 		}

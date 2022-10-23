@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const FmtYearMonth = "2006-01"
+
 // Accounts is a service responsible for managing accounts.
 type Accounts struct {
 	db AccountStore
@@ -38,11 +40,15 @@ func (s *Accounts) GetUserAccounts(ctx context.Context, u *users.User) (AccountC
 }
 
 func (s *Accounts) SetAccountCurrentAmount(ctx context.Context, acc *Account, currency string, amount float64) error {
-	month := time.Now().Format("2006-01")
+	month := time.Now().Format(FmtYearMonth)
 	return s.db.SetAccountAmount(ctx, acc, month, currency, amount)
 }
 
-func (s *Accounts) GetAccountCurrentAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
-	month := time.Now().Format("2006-01")
+func (s *Accounts) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
 	return s.db.GetAccountAmounts(ctx, acc, month)
+}
+
+func (s *Accounts) GetAccountCurrentAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
+	month := time.Now().Format(FmtYearMonth)
+	return s.GetAccountAmounts(ctx, acc, month)
 }
