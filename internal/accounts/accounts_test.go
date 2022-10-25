@@ -21,17 +21,17 @@ import (
 type AccountsTestSuite struct {
 	suite.Suite
 	db  *gorm.DB
-	srv *accounts.Accounts
+	srv *accounts.Service
 }
 
-func (s *AccountsTestSuite) SetupSuite() {
+func (ts *AccountsTestSuite) SetupSuite() {
 	dbHost := os.Getenv("POSTGRES_HOST")
 	dbPort := os.Getenv("POSTGRES_PORT")
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPwd := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
 	if dbHost == "" {
-		s.T().Skip("No DB configuration provided.")
+		ts.T().Skip("No DB configuration provided.")
 	}
 	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s", dbHost, dbUser, dbPwd, dbName)
 	if dbPort != "" {
@@ -39,164 +39,164 @@ func (s *AccountsTestSuite) SetupSuite() {
 	}
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Discard})
 	if err != nil {
-		s.T().Fatalf("Failed to connect to the DB: %s", err)
+		ts.T().Fatalf("Failed to connect to the DB: %s", err)
 	}
-	s.db = db
+	ts.db = db
 	store := accounts.NewGormStore(db)
-	s.srv = accounts.NewService(store)
+	ts.srv = accounts.NewService(store)
 }
 
-func (s *AccountsTestSuite) SetupTest() {
-	_ = s.db.Migrator().DropTable(&accounts.Amount{}, &accounts.Account{})
-	_ = s.db.AutoMigrate(&accounts.Account{}, &accounts.Amount{})
+func (ts *AccountsTestSuite) SetupTest() {
+	_ = ts.db.Migrator().DropTable(&accounts.Amount{}, &accounts.Account{})
+	_ = ts.db.AutoMigrate(&accounts.Account{}, &accounts.Amount{})
 }
 
-func (s *AccountsTestSuite) TestCreateAccount() {
-	u := s.createTestingUser()
+func (ts *AccountsTestSuite) TestCreateAccount() {
+	u := ts.createTestingUser()
 	acc := accounts.NewAccount(u, "test-create-account")
 
-	err := s.srv.CreateAccount(context.Background(), acc)
-	s.Require().NoError(err, "Failed to create account.")
+	err := ts.srv.CreateAccount(context.Background(), acc)
+	ts.Require().NoError(err, "Failed to create account.")
 
 	foundAcc := &accounts.Account{}
-	err = s.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
-	s.Require().NoError(err, "Failed to find the created account.")
-	s.Equal(acc.UUID, foundAcc.UUID)
+	err = ts.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
+	ts.Require().NoError(err, "Failed to find the created account.")
+	ts.Equal(acc.UUID, foundAcc.UUID)
 }
 
-func (s *AccountsTestSuite) TestUpdateAccount() {
-	s.Run("Exists", func() {
-		u := s.createTestingUser()
-		acc := s.createTestingAccount(u, "test-create-account")
+func (ts *AccountsTestSuite) TestUpdateAccount() {
+	ts.Run("Exists", func() {
+		u := ts.createTestingUser()
+		acc := ts.createTestingAccount(u, "test-create-account")
 
 		acc.Name = "test-update-account"
-		err := s.srv.UpdateAccount(context.Background(), acc)
-		s.Require().NoError(err, "Failed to update account.")
+		err := ts.srv.UpdateAccount(context.Background(), acc)
+		ts.Require().NoError(err, "Failed to update account.")
 
 		foundAcc := &accounts.Account{}
-		err = s.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
-		s.Require().NoError(err, "Failed to find the updated account.")
-		s.Equal(acc.UUID, foundAcc.UUID)
+		err = ts.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
+		ts.Require().NoError(err, "Failed to find the updated account.")
+		ts.Equal(acc.UUID, foundAcc.UUID)
 	})
 
-	s.Run("NotExists", func() {
-		u := s.createTestingUser()
+	ts.Run("NotExists", func() {
+		u := ts.createTestingUser()
 		UUID, _ := uuid.NewV4()
 		acc := &accounts.Account{Model: datastore.Model{UUID: UUID}, User: u, Name: "test-update-account"}
-		err := s.srv.UpdateAccount(context.Background(), acc)
-		s.Require().NoError(err, "Failed to update account.")
+		err := ts.srv.UpdateAccount(context.Background(), acc)
+		ts.Require().NoError(err, "Failed to update account.")
 
 		foundAcc := &accounts.Account{}
-		err = s.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
-		s.Require().ErrorIs(err, gorm.ErrRecordNotFound, "Non existing account was saved during the update.")
+		err = ts.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
+		ts.Require().ErrorIs(err, gorm.ErrRecordNotFound, "Non existing account was saved during the update.")
 	})
 }
 
-func (s *AccountsTestSuite) TestDeleteAccount() {
-	u := s.createTestingUser()
-	protoAcc := s.createTestingAccount(u, "test-delete-account")
+func (ts *AccountsTestSuite) TestDeleteAccount() {
+	u := ts.createTestingUser()
+	protoAcc := ts.createTestingAccount(u, "test-delete-account")
 
-	err := s.srv.DeleteAccount(context.Background(), protoAcc)
-	s.Require().NoError(err, "Failed to delete account.")
+	err := ts.srv.DeleteAccount(context.Background(), protoAcc)
+	ts.Require().NoError(err, "Failed to delete account.")
 
 	foundAcc := &accounts.Account{}
-	err = s.db.First(foundAcc, "uuid = ?", protoAcc.UUID).Error
-	s.Require().ErrorIs(err, gorm.ErrRecordNotFound, "Deleted record was found.")
+	err = ts.db.First(foundAcc, "uuid = ?", protoAcc.UUID).Error
+	ts.Require().ErrorIs(err, gorm.ErrRecordNotFound, "Deleted record was found.")
 
 }
 
-func (s *AccountsTestSuite) TestGetAccount() {
-	u := s.createTestingUser()
-	protoAcc := s.createTestingAccount(u, "test-get-account")
+func (ts *AccountsTestSuite) TestGetAccount() {
+	u := ts.createTestingUser()
+	protoAcc := ts.createTestingAccount(u, "test-get-account")
 
-	foundAcc, err := s.srv.GetAccount(context.Background(), protoAcc.UUID)
-	s.Require().NoError(err, "Failed to get the account.")
-	s.Equal(protoAcc.UUID, foundAcc.UUID)
+	foundAcc, err := ts.srv.GetAccount(context.Background(), protoAcc.UUID)
+	ts.Require().NoError(err, "Failed to get the account.")
+	ts.Equal(protoAcc.UUID, foundAcc.UUID)
 }
 
-func (s *AccountsTestSuite) TestGetUserAccounts() {
-	u1 := s.createTestingUser()
-	s.createTestingAccount(u1, "test-get-user-accounts-1-1")
-	s.createTestingAccount(u1, "test-get-user-accounts-1-2")
-	u2 := s.createTestingUser()
-	s.createTestingAccount(u2, "test-get-user-accounts-2-1")
+func (ts *AccountsTestSuite) TestGetUserAccounts() {
+	u1 := ts.createTestingUser()
+	ts.createTestingAccount(u1, "test-get-user-accounts-1-1")
+	ts.createTestingAccount(u1, "test-get-user-accounts-1-2")
+	u2 := ts.createTestingUser()
+	ts.createTestingAccount(u2, "test-get-user-accounts-2-1")
 
-	accs, err := s.srv.GetUserAccounts(context.Background(), u1)
-	s.Require().NoError(err, "Failed to get accounts.")
-	s.Len(accs, 2, "Invalid set of found accounts.")
+	accs, err := ts.srv.GetUserAccounts(context.Background(), u1)
+	ts.Require().NoError(err, "Failed to get accounts.")
+	ts.Len(accs, 2, "Invalid set of found accounts.")
 }
 
-func (s *AccountsTestSuite) TestSetAccountAmount() {
-	u := s.createTestingUser()
-	acc := s.createTestingAccount(u, "test-set-account-amount")
+func (ts *AccountsTestSuite) TestSetAccountAmount() {
+	u := ts.createTestingUser()
+	acc := ts.createTestingAccount(u, "test-set-account-amount")
 
-	err := s.srv.SetAccountCurrentAmount(context.Background(), acc, "usd", 10.99)
-	s.Require().NoError(err, "Failed to set USD amount on the account.")
+	err := ts.srv.SetAccountCurrentAmount(context.Background(), acc, "usd", 10.99)
+	ts.Require().NoError(err, "Failed to set USD amount on the account.")
 
 	amount := &accounts.Amount{}
-	err = s.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "usd").Error
-	s.Require().NoError(err, "Failed to get USD amount.")
-	s.Equal(10.99, amount.Amount, "Invalid amount on account.")
+	err = ts.db.First(amount, "account_uuid = ? AND currency_code = ?", acc.UUID, "usd").Error
+	ts.Require().NoError(err, "Failed to get USD amount.")
+	ts.Equal(10.99, amount.Amount, "Invalid amount on account.")
 
-	err = s.srv.SetAccountCurrentAmount(context.Background(), acc, "usd", 12)
-	s.Require().NoError(err, "Failed to change USD amount on the account.")
+	err = ts.srv.SetAccountCurrentAmount(context.Background(), acc, "usd", 12)
+	ts.Require().NoError(err, "Failed to change USD amount on the account.")
 
-	err = s.srv.SetAccountCurrentAmount(context.Background(), acc, "eur", 21)
-	s.Require().NoError(err, "Failed to set EUR amount on the account.")
+	err = ts.srv.SetAccountCurrentAmount(context.Background(), acc, "eur", 21)
+	ts.Require().NoError(err, "Failed to set EUR amount on the account.")
 
 	month := time.Now().Format(accounts.FmtYearMonth)
 
 	amount = &accounts.Amount{}
-	err = s.db.First(amount, "account_uuid = ? AND year_month = ? AND currency_code = ?", acc.UUID, month, "usd").Error
-	s.Require().NoError(err, "Failed to get updated USD amount.")
-	s.Equal(12., amount.Amount, "Invalid amount on account.")
+	err = ts.db.First(amount, "account_uuid = ? AND year_month = ? AND currency_code = ?", acc.UUID, month, "usd").Error
+	ts.Require().NoError(err, "Failed to get updated USD amount.")
+	ts.Equal(12., amount.Amount, "Invalid amount on account.")
 
 	amount = &accounts.Amount{}
-	err = s.db.First(amount, "account_uuid = ? AND year_month = ? AND currency_code = ?", acc.UUID, month, "eur").Error
-	s.Require().NoError(err, "Failed to get EUR amount.")
-	s.Equal(21., amount.Amount, "Invalid amount on account.")
+	err = ts.db.First(amount, "account_uuid = ? AND year_month = ? AND currency_code = ?", acc.UUID, month, "eur").Error
+	ts.Require().NoError(err, "Failed to get EUR amount.")
+	ts.Equal(21., amount.Amount, "Invalid amount on account.")
 }
 
-func (s *AccountsTestSuite) TestGetAccountCurrentAmounts() {
-	u := s.createTestingUser()
-	acc := s.createTestingAccount(u, "test-set-account-amount")
+func (ts *AccountsTestSuite) TestGetAccountCurrentAmounts() {
+	u := ts.createTestingUser()
+	acc := ts.createTestingAccount(u, "test-set-account-amount")
 
-	amounts, err := s.srv.GetAccountCurrentAmounts(context.Background(), acc)
-	s.Require().NoError(err, "Failed to get amounts on the account.")
-	s.Len(amounts, 0, "Invalid set of amounts returned.")
+	amounts, err := ts.srv.GetAccountCurrentAmounts(context.Background(), acc)
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Len(amounts, 0, "Invalid set of amounts returned.")
 
 	month := time.Now().Format(accounts.FmtYearMonth)
 
 	amount := &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "usd", Amount: 11.5}
-	err = s.db.Save(amount).Error
-	s.Require().NoError(err, "Failed to set amount on the account.")
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
 
 	amount = &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "eur", Amount: 27.3}
-	err = s.db.Save(amount).Error
-	s.Require().NoError(err, "Failed to set amount on the account.")
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
 
 	amount = &accounts.Amount{Account: acc, YearMonth: "2000-01", CurrencyCode: "usd", Amount: 5.}
-	err = s.db.Save(amount).Error
-	s.Require().NoError(err, "Failed to set amount on the account.")
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
 
-	amounts, err = s.srv.GetAccountCurrentAmounts(context.Background(), acc)
-	s.Require().NoError(err, "Failed to get amounts on the account.")
-	s.Require().Len(amounts, 2, "Invalid set of amounts returned.")
-	s.Equal(11.5, amounts["usd"].Amount, "Invalid amount on account.")
-	s.Equal(27.3, amounts["eur"].Amount, "Invalid amount on account.")
+	amounts, err = ts.srv.GetAccountCurrentAmounts(context.Background(), acc)
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
+	ts.Equal(11.5, amounts["usd"].Amount, "Invalid amount on account.")
+	ts.Equal(27.3, amounts["eur"].Amount, "Invalid amount on account.")
 }
 
-func (s *AccountsTestSuite) createTestingUser() *users.User {
-	s.T().Helper()
+func (ts *AccountsTestSuite) createTestingUser() *users.User {
+	ts.T().Helper()
 	UUID, _ := uuid.NewV4()
 	return &users.User{UUID: UUID}
 }
 
-func (s *AccountsTestSuite) createTestingAccount(u *users.User, name string) *accounts.Account {
-	s.T().Helper()
+func (ts *AccountsTestSuite) createTestingAccount(u *users.User, name string) *accounts.Account {
+	ts.T().Helper()
 	acc := accounts.NewAccount(u, name)
-	err := s.db.Create(acc).Error
-	s.Require().NoError(err, "Failed to create testing account.")
+	err := ts.db.Create(acc).Error
+	ts.Require().NoError(err, "Failed to create testing account.")
 	return acc
 }
 

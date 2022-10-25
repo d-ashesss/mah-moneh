@@ -9,46 +9,46 @@ import (
 
 const FmtYearMonth = "2006-01"
 
-// Accounts is a service responsible for managing accounts.
-type Accounts struct {
+// Service is a service responsible for managing accounts.
+type Service struct {
 	db AccountStore
 }
 
 // NewService initializes a new accounts service.
-func NewService(db AccountStore) *Accounts {
-	return &Accounts{db: db}
+func NewService(db AccountStore) *Service {
+	return &Service{db: db}
 }
 
-func (s *Accounts) CreateAccount(ctx context.Context, acc *Account) error {
+func (s *Service) CreateAccount(ctx context.Context, acc *Account) error {
 	return s.db.CreateAccount(ctx, acc)
 }
 
-func (s *Accounts) UpdateAccount(ctx context.Context, acc *Account) error {
+func (s *Service) UpdateAccount(ctx context.Context, acc *Account) error {
 	return s.db.UpdateAccount(ctx, acc)
 }
 
-func (s *Accounts) DeleteAccount(ctx context.Context, acc *Account) error {
+func (s *Service) DeleteAccount(ctx context.Context, acc *Account) error {
 	return s.db.DeleteAccount(ctx, acc)
 }
 
-func (s *Accounts) GetAccount(ctx context.Context, UUID uuid.UUID) (*Account, error) {
+func (s *Service) GetAccount(ctx context.Context, UUID uuid.UUID) (*Account, error) {
 	return s.db.GetAccount(ctx, UUID)
 }
 
-func (s *Accounts) GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error) {
+func (s *Service) GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error) {
 	return s.db.GetUserAccounts(ctx, u)
 }
 
-func (s *Accounts) SetAccountCurrentAmount(ctx context.Context, acc *Account, currency string, amount float64) error {
+func (s *Service) SetAccountCurrentAmount(ctx context.Context, acc *Account, currency string, amount float64) error {
 	month := time.Now().Format(FmtYearMonth)
 	return s.db.SetAccountAmount(ctx, acc, month, currency, amount)
 }
 
-func (s *Accounts) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
+func (s *Service) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
 	return s.db.GetAccountAmounts(ctx, acc, month)
 }
 
-func (s *Accounts) GetAccountCurrentAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
+func (s *Service) GetAccountCurrentAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
 	month := time.Now().Format(FmtYearMonth)
 	return s.GetAccountAmounts(ctx, acc, month)
 }

@@ -15,97 +15,97 @@ import (
 type ServiceTestSuite struct {
 	suite.Suite
 	store *mocks.AccountStore
-	srv   *accounts.Accounts
+	srv   *accounts.Service
 }
 
-func (s *ServiceTestSuite) SetupTest() {
-	s.store = mocks.NewAccountStore(s.T())
-	s.srv = accounts.NewService(s.store)
+func (ts *ServiceTestSuite) SetupTest() {
+	ts.store = mocks.NewAccountStore(ts.T())
+	ts.srv = accounts.NewService(ts.store)
 }
 
-func (s *ServiceTestSuite) TestCreateAccount() {
+func (ts *ServiceTestSuite) TestCreateAccount() {
 	ctx := context.Background()
-	s.store.On("CreateAccount", ctx, mock.AnythingOfType("*accounts.Account")).
+	ts.store.On("CreateAccount", ctx, mock.AnythingOfType("*accounts.Account")).
 		Return(nil).Once()
 
 	acc := &accounts.Account{}
-	err := s.srv.CreateAccount(ctx, acc)
-	s.Require().NoError(err, "Failed to create account.")
+	err := ts.srv.CreateAccount(ctx, acc)
+	ts.Require().NoError(err, "Failed to create account.")
 }
 
-func (s *ServiceTestSuite) TestUpdateAccount() {
+func (ts *ServiceTestSuite) TestUpdateAccount() {
 	ctx := context.Background()
-	s.store.On("UpdateAccount", ctx, mock.AnythingOfType("*accounts.Account")).
+	ts.store.On("UpdateAccount", ctx, mock.AnythingOfType("*accounts.Account")).
 		Return(nil).Once()
 
 	acc := &accounts.Account{}
-	err := s.srv.UpdateAccount(ctx, acc)
-	s.Require().NoError(err, "Failed to update account.")
+	err := ts.srv.UpdateAccount(ctx, acc)
+	ts.Require().NoError(err, "Failed to update account.")
 }
 
-func (s *ServiceTestSuite) TestDeleteAccount() {
+func (ts *ServiceTestSuite) TestDeleteAccount() {
 	ctx := context.Background()
-	s.store.On("DeleteAccount", ctx, mock.AnythingOfType("*accounts.Account")).
+	ts.store.On("DeleteAccount", ctx, mock.AnythingOfType("*accounts.Account")).
 		Return(nil).Once()
 
 	acc := &accounts.Account{}
-	err := s.srv.DeleteAccount(ctx, acc)
-	s.Require().NoError(err, "Failed to delete account.")
+	err := ts.srv.DeleteAccount(ctx, acc)
+	ts.Require().NoError(err, "Failed to delete account.")
 }
 
-func (s *ServiceTestSuite) TestGetAccount() {
+func (ts *ServiceTestSuite) TestGetAccount() {
 	ctx := context.Background()
 	UUID, _ := uuid.NewV4()
 	protoAcc := &accounts.Account{Model: datastore.Model{UUID: UUID}}
-	s.store.On("GetAccount", ctx, UUID).
+	ts.store.On("GetAccount", ctx, UUID).
 		Return(protoAcc, nil).Once()
 
-	acc, err := s.srv.GetAccount(ctx, UUID)
-	s.Require().NoError(err, "Failed to get the account.")
-	s.Equal(protoAcc, acc)
+	acc, err := ts.srv.GetAccount(ctx, UUID)
+	ts.Require().NoError(err, "Failed to get the account.")
+	ts.Equal(protoAcc, acc)
 }
 
-func (s *ServiceTestSuite) TestGetUserAccounts() {
+func (ts *ServiceTestSuite) TestGetUserAccounts() {
 	ctx := context.Background()
-	s.store.On("GetUserAccounts", ctx, mock.AnythingOfType("*users.User")).
+	ts.store.On("GetUserAccounts", ctx, mock.AnythingOfType("*users.User")).
 		Return(accounts.AccountCollection{}, nil).Once()
 
 	u := &users.User{}
-	accs, err := s.srv.GetUserAccounts(ctx, u)
-	s.Require().NoError(err, "Failed to get user accounts.")
-	s.NotNil(accs)
+	accs, err := ts.srv.GetUserAccounts(ctx, u)
+	ts.Require().NoError(err, "Failed to get user accounts.")
+	ts.NotNil(accs)
 }
 
-func (s *ServiceTestSuite) TestSetAccountCurrentAmount() {
+func (ts *ServiceTestSuite) TestSetAccountCurrentAmount() {
 	ctx := context.Background()
 	acc := &accounts.Account{}
-	s.store.On("SetAccountAmount", ctx, acc, mock.AnythingOfType("string"), "usd", 10.).
+	ts.store.On("SetAccountAmount", ctx, acc, mock.AnythingOfType("string"), "usd", 10.).
 		Return(nil).Once()
 
-	err := s.srv.SetAccountCurrentAmount(ctx, acc, "usd", 10)
-	s.Require().NoError(err, "Failed to set amount on the account.")
+	err := ts.srv.SetAccountCurrentAmount(ctx, acc, "usd", 10)
+	ts.Require().NoError(err, "Failed to set amount on the account.")
 }
 
-func (s *ServiceTestSuite) TestGetAccountAmounts() {
+func (ts *ServiceTestSuite) TestGetAccountAmounts() {
 	ctx := context.Background()
 	acc := &accounts.Account{}
-	s.store.On("GetAccountAmounts", ctx, acc, "2010-01").
+	ts.store.On("GetAccountAmounts", ctx, acc, "2010-01").
 		Return(accounts.AmountCollection{}, nil).Once()
 
-	amounts, err := s.srv.GetAccountAmounts(ctx, acc, "2010-01")
-	s.Require().NoError(err, "Failed to get amounts of the account.")
-	s.NotNil(amounts)
+	amounts, err := ts.srv.GetAccountAmounts(ctx, acc, "2010-01")
+	ts.Require().NoError(err, "Failed to get amounts of the account.")
+	ts.NotNil(amounts)
 }
 
-func (s *ServiceTestSuite) TestGetAccountCurrentAmounts() {
+func (ts *ServiceTestSuite) TestGetAccountCurrentAmounts() {
 	ctx := context.Background()
 	acc := &accounts.Account{}
-	s.store.On("GetAccountAmounts", ctx, acc, mock.AnythingOfType("string")).
+	ts.store.On("GetAccountAmounts", ctx, acc, mock.AnythingOfType("string")).
 		Return(accounts.AmountCollection{}, nil).Once()
 
-	amounts, err := s.srv.GetAccountCurrentAmounts(ctx, acc)
-	s.Require().NoError(err, "Failed to get amounts of the account.")
-	s.NotNil(amounts)
+	amounts, err := ts.srv.GetAccountCurrentAmounts(ctx, acc)
+	ts.Require().NoError(err, "Failed to get amounts of the account.")
+	ts.NotNil(amounts)
 }
 
 func TestService(t *testing.T) {

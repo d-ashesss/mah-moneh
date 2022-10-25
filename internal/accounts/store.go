@@ -78,7 +78,7 @@ func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, month st
 
 func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
 	amounts := make([]*Amount, 0)
-	if err := s.db.WithContext(ctx).Find(&amounts, "account_uuid = ? AND year_month =?", acc.UUID, month).Error; err != nil {
+	if err := s.db.WithContext(ctx).Find(&amounts, "account_uuid = ? AND year_month = ?", acc.UUID, month).Error; err != nil {
 		return nil, err
 	}
 	c := make(AmountCollection)
