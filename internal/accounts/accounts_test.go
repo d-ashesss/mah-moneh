@@ -157,25 +157,87 @@ func (ts *AccountsTestSuite) TestSetAccountAmount() {
 	ts.Equal(21., amount.Amount, "Invalid amount on account.")
 }
 
+func (ts *AccountsTestSuite) TestGetAccountAmounts() {
+	u := ts.createTestingUser()
+	acc := ts.createTestingAccount(u, "test-get-account-amounts")
+	var (
+		amount  *accounts.Amount
+		amounts accounts.AmountCollection
+		err     error
+	)
+
+	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-11")
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Require().Len(amounts, 0, "Invalid set of amounts returned.")
+
+	amount = &accounts.Amount{Account: acc, YearMonth: "2010-10", CurrencyCode: "usd", Amount: 10.}
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
+
+	amount = &accounts.Amount{Account: acc, YearMonth: "2010-10", CurrencyCode: "eur", Amount: 15.}
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
+
+	amount = &accounts.Amount{Account: acc, YearMonth: "2010-08", CurrencyCode: "usd", Amount: 20.}
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
+
+	amount = &accounts.Amount{Account: acc, YearMonth: "2010-06", CurrencyCode: "usd", Amount: 30.}
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
+
+	amount = &accounts.Amount{Account: acc, YearMonth: "2010-06", CurrencyCode: "eur", Amount: 35.}
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
+
+	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-11")
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
+	ts.Equal(10., amounts["usd"].Amount, "Invalid amount on account.")
+	ts.Equal(15., amounts["eur"].Amount, "Invalid amount on account.")
+
+	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-10")
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
+	ts.Equal(10., amounts["usd"].Amount, "Invalid amount on account.")
+	ts.Equal(15., amounts["eur"].Amount, "Invalid amount on account.")
+
+	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-09")
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
+	ts.Equal(20., amounts["usd"].Amount, "Invalid amount on account.")
+	ts.Equal(35., amounts["eur"].Amount, "Invalid amount on account.")
+}
+
 func (ts *AccountsTestSuite) TestGetAccountCurrentAmounts() {
 	u := ts.createTestingUser()
 	acc := ts.createTestingAccount(u, "test-set-account-amount")
+	var (
+		amount  *accounts.Amount
+		amounts accounts.AmountCollection
+		err     error
+	)
 
-	amounts, err := ts.srv.GetAccountCurrentAmounts(context.Background(), acc)
+	amounts, err = ts.srv.GetAccountCurrentAmounts(context.Background(), acc)
 	ts.Require().NoError(err, "Failed to get amounts on the account.")
 	ts.Len(amounts, 0, "Invalid set of amounts returned.")
 
+	amount = &accounts.Amount{Account: acc, YearMonth: "2000-01", CurrencyCode: "usd", Amount: 5.}
+	err = ts.db.Save(amount).Error
+	ts.Require().NoError(err, "Failed to set amount on the account.")
+
+	amounts, err = ts.srv.GetAccountCurrentAmounts(context.Background(), acc)
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Require().Len(amounts, 1, "Invalid set of amounts returned.")
+	ts.Equal(5., amounts["usd"].Amount, "Invalid amount on account.")
+
 	month := time.Now().Format(accounts.FmtYearMonth)
 
-	amount := &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "usd", Amount: 11.5}
+	amount = &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "usd", Amount: 11.5}
 	err = ts.db.Save(amount).Error
 	ts.Require().NoError(err, "Failed to set amount on the account.")
 
 	amount = &accounts.Amount{Account: acc, YearMonth: month, CurrencyCode: "eur", Amount: 27.3}
-	err = ts.db.Save(amount).Error
-	ts.Require().NoError(err, "Failed to set amount on the account.")
-
-	amount = &accounts.Amount{Account: acc, YearMonth: "2000-01", CurrencyCode: "usd", Amount: 5.}
 	err = ts.db.Save(amount).Error
 	ts.Require().NoError(err, "Failed to set amount on the account.")
 

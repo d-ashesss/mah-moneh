@@ -21,7 +21,7 @@ func (ts *CapitalTestSuite) SetupTest() {
 	ts.srv = spendings.NewService(ts.capital)
 }
 
-func (ts *CapitalTestSuite) TestGetSpendings() {
+func (ts *CapitalTestSuite) TestGetMonthSpendings() {
 	ctx := context.Background()
 	u := &users.User{}
 	prevCap := &capital.Capital{Amounts: map[string]float64{
@@ -36,7 +36,7 @@ func (ts *CapitalTestSuite) TestGetSpendings() {
 	}}
 	ts.capital.On("GetCapital", ctx, u, "2009-12").Return(prevCap, nil)
 	ts.capital.On("GetCapital", ctx, u, "2010-01").Return(currentCap, nil)
-	spending, err := ts.srv.GetSpendings(ctx, u, "2010-01")
+	spending, err := ts.srv.GetMonthSpendings(ctx, u, "2010-01")
 	ts.Require().NoError(err, "Failed to get spendings.")
 	ts.Equal(-3., spending.Amounts["usd"])
 	ts.Equal(-8., spending.Amounts["eur"])

@@ -22,7 +22,7 @@ type AccountStore interface {
 	GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error)
 	// SetAccountAmount sets the amount of funds on the account.
 	SetAccountAmount(ctx context.Context, acc *Account, month string, currency string, amount float64) error
-	// GetAccountAmounts retrieves all the amounts of funds on the account.
+	// GetAccountAmounts retrieves amount of funds for each currency on the account for the specified month.
 	GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error)
 }
 
@@ -78,12 +78,13 @@ func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, month st
 
 func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
 	amounts := make([]*Amount, 0)
-	if err := s.db.WithContext(ctx).Find(&amounts, "account_uuid = ? AND year_month = ?", acc.UUID, month).Error; err != nil {
+	if err := s.db.WithContext(ctx).
+		Distinct("currency_code").
+		Select("*").
+		Where("account_uuid = ?", acc.UUID).
+		Where("year_month <= ?", month).
+		Find(&amounts).Error; err != nil {
 		return nil, err
 	}
-	c := make(AmountCollection)
-	for _, a := range amounts {
-		c[a.CurrencyCode] = a
-	}
-	return c, nil
+	return NewAmountCollection(amounts), nil
 }

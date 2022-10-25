@@ -32,3 +32,11 @@ type Amount struct {
 
 // AmountCollection represents a collection of account's amounts.
 type AmountCollection map[string]*Amount
+
+func NewAmountCollection(amounts []*Amount) AmountCollection {
+	c := make(AmountCollection)
+	for _, a := range amounts {
+		c[a.CurrencyCode] = a
+	}
+	return c
+}

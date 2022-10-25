@@ -20,7 +20,7 @@ func NewService(cs CapitalService) *Service {
 	return &Service{capital: cs}
 }
 
-func (s *Service) GetSpendings(ctx context.Context, u *users.User, month string) (*Spending, error) {
+func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month string) (*Spending, error) {
 	currentCapital, err := s.capital.GetCapital(ctx, u, month)
 	if err != nil {
 		return nil, err
