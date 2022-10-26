@@ -1,7 +1,7 @@
 package converter
 
 type CurrencyService interface {
-	GetRate(from, target, month string) float64
+	GetRate(base, target, month string) float64
 }
 
 // Service represents converter service.
