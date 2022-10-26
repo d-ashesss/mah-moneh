@@ -5,11 +5,13 @@ type Capital struct {
 	Amounts map[string]float64
 }
 
+// New initializes new capital.
 func New() *Capital {
 	amounts := make(map[string]float64)
 	return &Capital{Amounts: amounts}
 }
 
+// Substract subtracts one capital from another.
 func (c *Capital) Substract(c2 *Capital) map[string]float64 {
 	amounts := make(map[string]float64)
 	for currency, amount := range c.Amounts {

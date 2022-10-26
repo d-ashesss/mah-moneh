@@ -11,14 +11,17 @@ type AccountsService interface {
 	GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.AmountCollection, error)
 }
 
+// Service is a service responsible for calculating the capital.
 type Service struct {
 	accounts AccountsService
 }
 
+// NewService initializes capital service.
 func NewService(as AccountsService) *Service {
 	return &Service{accounts: as}
 }
 
+// GetCapital calculates capital for the specified month.
 func (s *Service) GetCapital(ctx context.Context, u *users.User, month string) (*Capital, error) {
 	accs, err := s.accounts.GetUserAccounts(ctx, u)
 	if err != nil {
