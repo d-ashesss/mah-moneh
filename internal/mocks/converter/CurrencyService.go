@@ -9,13 +9,13 @@ type CurrencyService struct {
 	mock.Mock
 }
 
-// GetRate provides a mock function with given fields: from, to
-func (_m *CurrencyService) GetRate(from string, to string) float64 {
-	ret := _m.Called(from, to)
+// GetRate provides a mock function with given fields: from, target, month
+func (_m *CurrencyService) GetRate(from string, target string, month string) float64 {
+	ret := _m.Called(from, target, month)
 
 	var r0 float64
-	if rf, ok := ret.Get(0).(func(string, string) float64); ok {
-		r0 = rf(from, to)
+	if rf, ok := ret.Get(0).(func(string, string, string) float64); ok {
+		r0 = rf(from, target, month)
 	} else {
 		r0 = ret.Get(0).(float64)
 	}

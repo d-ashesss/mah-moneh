@@ -1,7 +1,7 @@
 package converter
 
 type CurrencyService interface {
-	GetRate(from, target string) float64
+	GetRate(from, target, month string) float64
 }
 
 // Service represents converter service.
@@ -15,10 +15,10 @@ func NewService(cs CurrencyService) *Service {
 }
 
 // GetTotal calculates total amount in specified currency.
-func (s *Service) GetTotal(amounts map[string]float64, targetCurrency string) float64 {
+func (s *Service) GetTotal(amounts map[string]float64, targetCurrency string, month string) float64 {
 	var total float64
 	for currency, amount := range amounts {
-		rate := s.currencies.GetRate(currency, targetCurrency)
+		rate := s.currencies.GetRate(currency, targetCurrency, month)
 		total += amount * rate
 	}
 	return total
