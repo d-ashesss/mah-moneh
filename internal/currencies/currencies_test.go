@@ -46,6 +46,28 @@ func (ts *CurrenciesTestSuite) SetupTest() {
 	_ = ts.db.AutoMigrate(&currencies.Rate{})
 }
 
+func (ts *CurrenciesTestSuite) TestSetRate() {
+	var (
+		err  error
+		rate *currencies.Rate
+	)
+	err = ts.srv.SetRate("usd", "eur", "2010-10", 0.9)
+	ts.Require().NoError(err, "Failed to set the rate.")
+
+	rate = &currencies.Rate{}
+	err = ts.db.Where("base = ? AND target = ? AND year_month = ?", "usd", "eur", "2010-10").First(rate).Error
+	ts.Require().NoError(err, "Failed to get the rate.")
+	ts.InDelta(0.9, rate.Rate, 0.001)
+
+	err = ts.srv.SetRate("usd", "eur", "2010-10", 1.1)
+	ts.Require().NoError(err, "Failed to update the rate.")
+
+	rate = &currencies.Rate{}
+	err = ts.db.Where("base = ? AND target = ? AND year_month = ?", "usd", "eur", "2010-10").First(rate).Error
+	ts.Require().NoError(err, "Failed to get the updated rate.")
+	ts.InDelta(1.1, rate.Rate, 0.001)
+}
+
 func (ts *CurrenciesTestSuite) TestGetRate() {
 	ts.createRate("usd", "eur", "2010-10", 1.1)
 	ts.createRate("usd", "eur", "2010-08", 1.0)

@@ -23,8 +23,13 @@ func NewGormStore(db *gorm.DB) Store {
 }
 
 func (g *gormStore) SetRate(base, target, month string, rate float64) error {
-	//TODO implement me
-	panic("implement me")
+	r := &Rate{
+		Base:      base,
+		Target:    target,
+		YearMonth: month,
+		Rate:      rate,
+	}
+	return g.db.Save(r).Error
 }
 
 func (g *gormStore) GetRate(base, target, month string) (*Rate, error) {
