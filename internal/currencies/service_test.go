@@ -9,25 +9,25 @@ import (
 	"testing"
 )
 
-type ServiceTestSuite struct {
+type CurrenciesServiceTestSuite struct {
 	suite.Suite
 	store *mocks.Store
 	srv   *currencies.Service
 }
 
-func (ts *ServiceTestSuite) SetupTest() {
+func (ts *CurrenciesServiceTestSuite) SetupTest() {
 	ts.store = mocks.NewStore(ts.T())
 	ts.srv = currencies.NewService(ts.store)
 }
 
-func (ts *ServiceTestSuite) TestSetRate() {
+func (ts *CurrenciesServiceTestSuite) TestSetRate() {
 	ts.store.On("SetRate", "usd", "eur", "2010-10", 10.0).
 		Return(nil).Once()
 	err := ts.srv.SetRate("usd", "eur", "2010-10", 10)
 	ts.Require().NoError(err, "Failed to set the rate.")
 }
 
-func (ts *ServiceTestSuite) TestGetRate() {
+func (ts *CurrenciesServiceTestSuite) TestGetRate() {
 	eurRate := &currencies.Rate{Rate: 1.1}
 	ts.store.On("GetRate", "usd", "eur", "2010-10").
 		Return(eurRate, nil)
@@ -41,6 +41,6 @@ func (ts *ServiceTestSuite) TestGetRate() {
 	ts.InDelta(0., eth, 0.001, "Got invalid rate.")
 }
 
-func TestServiceTestSuite(t *testing.T) {
-	suite.Run(t, new(ServiceTestSuite))
+func TestCurrenciesService(t *testing.T) {
+	suite.Run(t, new(CurrenciesServiceTestSuite))
 }

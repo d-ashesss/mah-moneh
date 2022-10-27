@@ -8,12 +8,12 @@ import (
 	"testing"
 )
 
-type ConverterTestSuite struct {
+type ConverterServiceTestSuite struct {
 	suite.Suite
 	srv *converter.Service
 }
 
-func (ts *ConverterTestSuite) SetupTest() {
+func (ts *ConverterServiceTestSuite) SetupTest() {
 	cs := mocks.NewCurrencyService(ts.T())
 	cs.On("GetRate", "usd", "usd", mock.AnythingOfType("string")).Return(1.0).Maybe()
 	cs.On("GetRate", "usd", "eur", mock.AnythingOfType("string")).Return(1.1).Maybe()
@@ -28,7 +28,7 @@ func (ts *ConverterTestSuite) SetupTest() {
 	ts.srv = converter.NewService(cs)
 }
 
-func (ts *ConverterTestSuite) TestGetTotal() {
+func (ts *ConverterServiceTestSuite) TestGetTotal() {
 	amounts := map[string]float64{
 		"usd": 100,
 		"eur": 100,
@@ -48,6 +48,6 @@ func (ts *ConverterTestSuite) TestGetTotal() {
 	ts.InDelta(24.1, total, 0.001)
 }
 
-func TestConverterTestSuite(t *testing.T) {
-	suite.Run(t, new(ConverterTestSuite))
+func TestConverterService(t *testing.T) {
+	suite.Run(t, new(ConverterServiceTestSuite))
 }

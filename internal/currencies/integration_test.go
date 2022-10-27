@@ -13,13 +13,13 @@ import (
 	"testing"
 )
 
-type CurrenciesTestSuite struct {
+type CurrenciesIntegrationTestSuite struct {
 	suite.Suite
 	db  *gorm.DB
 	srv *currencies.Service
 }
 
-func (ts *CurrenciesTestSuite) SetupSuite() {
+func (ts *CurrenciesIntegrationTestSuite) SetupSuite() {
 	dbHost := os.Getenv("POSTGRES_HOST")
 	dbPort := os.Getenv("POSTGRES_PORT")
 	dbUser := os.Getenv("POSTGRES_USER")
@@ -41,12 +41,12 @@ func (ts *CurrenciesTestSuite) SetupSuite() {
 	ts.srv = currencies.NewService(store)
 }
 
-func (ts *CurrenciesTestSuite) SetupTest() {
+func (ts *CurrenciesIntegrationTestSuite) SetupTest() {
 	_ = ts.db.Migrator().DropTable(&currencies.Rate{})
 	_ = ts.db.AutoMigrate(&currencies.Rate{})
 }
 
-func (ts *CurrenciesTestSuite) TestSetRate() {
+func (ts *CurrenciesIntegrationTestSuite) TestSetRate() {
 	var (
 		err  error
 		rate *currencies.Rate
@@ -68,7 +68,7 @@ func (ts *CurrenciesTestSuite) TestSetRate() {
 	ts.InDelta(1.1, rate.Rate, 0.001)
 }
 
-func (ts *CurrenciesTestSuite) TestGetRate() {
+func (ts *CurrenciesIntegrationTestSuite) TestGetRate() {
 	ts.createRate("usd", "eur", "2010-10", 1.1)
 	ts.createRate("usd", "eur", "2010-08", 1.0)
 	var rate float64
@@ -89,7 +89,7 @@ func (ts *CurrenciesTestSuite) TestGetRate() {
 	ts.InDelta(0.0, rate, 0.001)
 }
 
-func (ts *CurrenciesTestSuite) createRate(base, target, month string, rate float64) {
+func (ts *CurrenciesIntegrationTestSuite) createRate(base, target, month string, rate float64) {
 	ts.T().Helper()
 	r := &currencies.Rate{
 		Base:      base,
@@ -101,6 +101,6 @@ func (ts *CurrenciesTestSuite) createRate(base, target, month string, rate float
 	ts.Require().NoError(err, "Failed to create testing rate record.")
 }
 
-func TestAccountsTestSuite(t *testing.T) {
-	suite.Run(t, new(CurrenciesTestSuite))
+func TestCurrenciesIntegration(t *testing.T) {
+	suite.Run(t, new(CurrenciesIntegrationTestSuite))
 }

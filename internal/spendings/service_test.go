@@ -10,18 +10,18 @@ import (
 	"testing"
 )
 
-type CapitalTestSuite struct {
+type CapitalServiceTestSuite struct {
 	suite.Suite
 	capital *mocks.CapitalService
 	srv     *spendings.Service
 }
 
-func (ts *CapitalTestSuite) SetupTest() {
+func (ts *CapitalServiceTestSuite) SetupTest() {
 	ts.capital = mocks.NewCapitalService(ts.T())
 	ts.srv = spendings.NewService(ts.capital)
 }
 
-func (ts *CapitalTestSuite) TestGetMonthSpendings() {
+func (ts *CapitalServiceTestSuite) TestGetMonthSpendings() {
 	ctx := context.Background()
 	u := &users.User{}
 	prevCap := &capital.Capital{Amounts: map[string]float64{
@@ -44,6 +44,6 @@ func (ts *CapitalTestSuite) TestGetMonthSpendings() {
 	ts.InDelta(2.0, spending.Amounts["btc"], 0.001)
 }
 
-func TestCapitalSuite(t *testing.T) {
-	suite.Run(t, new(CapitalTestSuite))
+func TestCapitalService(t *testing.T) {
+	suite.Run(t, new(CapitalServiceTestSuite))
 }

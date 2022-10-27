@@ -18,13 +18,13 @@ import (
 	"time"
 )
 
-type AccountsTestSuite struct {
+type AccountsIntegrationTestSuite struct {
 	suite.Suite
 	db  *gorm.DB
 	srv *accounts.Service
 }
 
-func (ts *AccountsTestSuite) SetupSuite() {
+func (ts *AccountsIntegrationTestSuite) SetupSuite() {
 	dbHost := os.Getenv("POSTGRES_HOST")
 	dbPort := os.Getenv("POSTGRES_PORT")
 	dbUser := os.Getenv("POSTGRES_USER")
@@ -46,12 +46,12 @@ func (ts *AccountsTestSuite) SetupSuite() {
 	ts.srv = accounts.NewService(store)
 }
 
-func (ts *AccountsTestSuite) SetupTest() {
+func (ts *AccountsIntegrationTestSuite) SetupTest() {
 	_ = ts.db.Migrator().DropTable(&accounts.Amount{}, &accounts.Account{})
 	_ = ts.db.AutoMigrate(&accounts.Account{}, &accounts.Amount{})
 }
 
-func (ts *AccountsTestSuite) TestCreateAccount() {
+func (ts *AccountsIntegrationTestSuite) TestCreateAccount() {
 	u := ts.createTestingUser()
 	acc := accounts.NewAccount(u, "test-create-account")
 
@@ -64,7 +64,7 @@ func (ts *AccountsTestSuite) TestCreateAccount() {
 	ts.Equal(acc.UUID, foundAcc.UUID)
 }
 
-func (ts *AccountsTestSuite) TestUpdateAccount() {
+func (ts *AccountsIntegrationTestSuite) TestUpdateAccount() {
 	ts.Run("Exists", func() {
 		u := ts.createTestingUser()
 		acc := ts.createTestingAccount(u, "test-create-account")
@@ -92,7 +92,7 @@ func (ts *AccountsTestSuite) TestUpdateAccount() {
 	})
 }
 
-func (ts *AccountsTestSuite) TestDeleteAccount() {
+func (ts *AccountsIntegrationTestSuite) TestDeleteAccount() {
 	u := ts.createTestingUser()
 	protoAcc := ts.createTestingAccount(u, "test-delete-account")
 
@@ -105,7 +105,7 @@ func (ts *AccountsTestSuite) TestDeleteAccount() {
 
 }
 
-func (ts *AccountsTestSuite) TestGetAccount() {
+func (ts *AccountsIntegrationTestSuite) TestGetAccount() {
 	u := ts.createTestingUser()
 	protoAcc := ts.createTestingAccount(u, "test-get-account")
 
@@ -114,7 +114,7 @@ func (ts *AccountsTestSuite) TestGetAccount() {
 	ts.Equal(protoAcc.UUID, foundAcc.UUID)
 }
 
-func (ts *AccountsTestSuite) TestGetUserAccounts() {
+func (ts *AccountsIntegrationTestSuite) TestGetUserAccounts() {
 	u1 := ts.createTestingUser()
 	ts.createTestingAccount(u1, "test-get-user-accounts-1-1")
 	ts.createTestingAccount(u1, "test-get-user-accounts-1-2")
@@ -126,7 +126,7 @@ func (ts *AccountsTestSuite) TestGetUserAccounts() {
 	ts.Len(accs, 2, "Invalid set of found accounts.")
 }
 
-func (ts *AccountsTestSuite) TestSetAccountAmount() {
+func (ts *AccountsIntegrationTestSuite) TestSetAccountAmount() {
 	u := ts.createTestingUser()
 	acc := ts.createTestingAccount(u, "test-set-account-amount")
 
@@ -157,7 +157,7 @@ func (ts *AccountsTestSuite) TestSetAccountAmount() {
 	ts.InDelta(21.0, amount.Amount, 0.001, "Invalid amount on account.")
 }
 
-func (ts *AccountsTestSuite) TestGetAccountAmounts() {
+func (ts *AccountsIntegrationTestSuite) TestGetAccountAmounts() {
 	u := ts.createTestingUser()
 	acc := ts.createTestingAccount(u, "test-get-account-amounts")
 	var (
@@ -209,7 +209,7 @@ func (ts *AccountsTestSuite) TestGetAccountAmounts() {
 	ts.InDelta(35.0, amounts["eur"].Amount, 0.001, "Invalid amount on account.")
 }
 
-func (ts *AccountsTestSuite) TestGetAccountCurrentAmounts() {
+func (ts *AccountsIntegrationTestSuite) TestGetAccountCurrentAmounts() {
 	u := ts.createTestingUser()
 	acc := ts.createTestingAccount(u, "test-set-account-amount")
 	var (
@@ -248,13 +248,13 @@ func (ts *AccountsTestSuite) TestGetAccountCurrentAmounts() {
 	ts.InDelta(27.3, amounts["eur"].Amount, 0.001, "Invalid amount on account.")
 }
 
-func (ts *AccountsTestSuite) createTestingUser() *users.User {
+func (ts *AccountsIntegrationTestSuite) createTestingUser() *users.User {
 	ts.T().Helper()
 	UUID, _ := uuid.NewV4()
 	return &users.User{UUID: UUID}
 }
 
-func (ts *AccountsTestSuite) createTestingAccount(u *users.User, name string) *accounts.Account {
+func (ts *AccountsIntegrationTestSuite) createTestingAccount(u *users.User, name string) *accounts.Account {
 	ts.T().Helper()
 	acc := accounts.NewAccount(u, name)
 	err := ts.db.Create(acc).Error
@@ -262,6 +262,6 @@ func (ts *AccountsTestSuite) createTestingAccount(u *users.User, name string) *a
 	return acc
 }
 
-func TestAccountsTestSuite(t *testing.T) {
-	suite.Run(t, new(AccountsTestSuite))
+func TestAccountsIntegration(t *testing.T) {
+	suite.Run(t, new(AccountsIntegrationTestSuite))
 }
