@@ -34,8 +34,8 @@ func (ts *CapitalTestSuite) TestGetCapital() {
 	ts.accounts.On("GetAccountAmounts", ctx, acc, "2010-10").Return(amounts, nil)
 	c, err := ts.srv.GetCapital(ctx, u, "2010-10")
 	ts.Require().NoError(err, "Failed to get capital.")
-	ts.Equal(10., c.Amounts["usd"])
-	ts.Equal(12., c.Amounts["eur"])
+	ts.InDelta(10.0, c.Amounts["usd"], 0.001)
+	ts.InDelta(12.0, c.Amounts["eur"], 0.001)
 }
 
 func TestCapitalSuite(t *testing.T) {

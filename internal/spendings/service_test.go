@@ -38,10 +38,10 @@ func (ts *CapitalTestSuite) TestGetMonthSpendings() {
 	ts.capital.On("GetCapital", ctx, u, "2010-01").Return(currentCap, nil)
 	spending, err := ts.srv.GetMonthSpendings(ctx, u, "2010-01")
 	ts.Require().NoError(err, "Failed to get spendings.")
-	ts.Equal(-3., spending.Amounts["usd"])
-	ts.Equal(-8., spending.Amounts["eur"])
-	ts.Equal(-4., spending.Amounts["eth"])
-	ts.Equal(2., spending.Amounts["btc"])
+	ts.InDelta(-3.0, spending.Amounts["usd"], 0.001)
+	ts.InDelta(-8.0, spending.Amounts["eur"], 0.001)
+	ts.InDelta(-4.0, spending.Amounts["eth"], 0.001)
+	ts.InDelta(2.0, spending.Amounts["btc"], 0.001)
 }
 
 func TestCapitalSuite(t *testing.T) {
