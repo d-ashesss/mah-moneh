@@ -11,8 +11,8 @@ func New() *Capital {
 	return &Capital{Amounts: amounts}
 }
 
-// Substract subtracts one capital from another.
-func (c *Capital) Substract(c2 *Capital) map[string]float64 {
+// Subtract subtracts one capital from another.
+func (c *Capital) Subtract(c2 *Capital) map[string]float64 {
 	amounts := make(map[string]float64)
 	for currency, amount := range c.Amounts {
 		amounts[currency] = amount

@@ -37,7 +37,7 @@ func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month st
 		return nil, err
 	}
 	sp := &Spending{
-		Amounts: currentCapital.Substract(prevCapital),
+		Amounts: currentCapital.Subtract(prevCapital),
 	}
 	return sp, nil
 }
