@@ -10,6 +10,22 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: "postgres:14"
+        env:
+          POSTGRES_PASSWORD: mah-password
+          POSTGRES_USER: test
+          POSTGRES_DB: test
+        ports:
+          - 9999:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v3
 
@@ -20,4 +36,4 @@ jobs:
         cache: true
 
     - name: Test
-      run: go test -v ./...
+      run: POSTGRES_HOST=localhost POSTGRES_PORT=9999 POSTGRES_USER=test POSTGRES_PASSWORD=mah-password POSTGRES_DB=test go test -tags=integration -v ./...
