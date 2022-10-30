@@ -23,17 +23,26 @@ func NewGormStore(db *gorm.DB) Store {
 }
 
 func (s *gormStore) SaveTransaction(ctx context.Context, tx *Transaction) error {
-	panic("implement me")
+	return s.db.WithContext(ctx).Save(tx).Error
 }
 
 func (s *gormStore) DeleteTransaction(ctx context.Context, tx *Transaction) error {
-	panic("implement me")
+	return s.db.WithContext(ctx).Delete(tx).Error
 }
 
 func (s *gormStore) GetTransaction(ctx context.Context, uuid uuid.UUID) (*Transaction, error) {
-	panic("implement me")
+	tx := &Transaction{}
+	if err := s.db.WithContext(ctx).First(tx, "uuid = ?", uuid).Error; err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 func (s *gormStore) GetUserTransactions(ctx context.Context, u *users.User, month string) (TransactionCollection, error) {
-	panic("implement me")
+	txs := make(TransactionCollection, 0)
+	err := s.db.WithContext(ctx).Where("user_uuid = ?", u.UUID).Where("year_month = ?", month).Find(&txs).Error
+	if err != nil {
+		return nil, err
+	}
+	return txs, nil
 }

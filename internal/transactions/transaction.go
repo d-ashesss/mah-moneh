@@ -15,7 +15,7 @@ const (
 
 type Transaction struct {
 	datastore.Model
-	User        *users.User `gorm:"notNull"`
+	User        *users.User `gorm:"embedded;embeddedPrefix:user_;notNull"`
 	YearMonth   string
 	Type        TransactionType
 	Currency    string
