@@ -73,7 +73,7 @@ func (ts *TransactionsServiceTestSuite) TestGetTransaction() {
 func (ts *TransactionsServiceTestSuite) TestGetUserTransactions() {
 	ctx := context.Background()
 	u := &users.User{}
-	ts.store.On("GetTransaction", ctx, u, "2010-10").Return(transactions.TransactionCollection{}, nil)
+	ts.store.On("GetUserTransactions", ctx, u, "2010-10").Return(transactions.TransactionCollection{}, nil)
 	txs, err := ts.srv.GetUserTransactions(ctx, u, "2010-10")
 	ts.Require().NoError(err, "Failed to get user transactions.")
 	ts.Require().NotNil(txs, "Invalid transactions response.")

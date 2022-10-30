@@ -15,25 +15,37 @@ func NewService(db Store) *Service {
 }
 
 func (s *Service) AddIncome(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string) (*Transaction, error) {
-	panic("implemente me")
+	tx := NewIncomeTransaction(u, month, currency, amt, desc)
+	if err := s.db.SaveTransaction(ctx, tx); err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 func (s *Service) AddTransfer(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string) (*Transaction, error) {
-	panic("implemente me")
+	tx := NewTransferTransaction(u, month, currency, amt, desc)
+	if err := s.db.SaveTransaction(ctx, tx); err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 func (s *Service) AddExpense(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string) (*Transaction, error) {
-	panic("implemente me")
+	tx := NewExpenseTransaction(u, month, currency, amt, desc)
+	if err := s.db.SaveTransaction(ctx, tx); err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 func (s *Service) DeleteTransaction(ctx context.Context, tx *Transaction) error {
-	panic("implemente me")
+	return s.db.DeleteTransaction(ctx, tx)
 }
 
 func (s *Service) GetTransaction(ctx context.Context, uuid uuid.UUID) (*Transaction, error) {
-	panic("implemente me")
+	return s.db.GetTransaction(ctx, uuid)
 }
 
 func (s *Service) GetUserTransactions(ctx context.Context, u *users.User, month string) (TransactionCollection, error) {
-	panic("implemente me")
+	return s.db.GetUserTransactions(ctx, u, month)
 }
