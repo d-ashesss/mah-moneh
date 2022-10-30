@@ -15,11 +15,45 @@ const (
 
 type Transaction struct {
 	datastore.Model
-	User      *users.User
-	YearMonth string
-	Type      TransactionType
-	Currency  string
-	Amount    float64
+	User        *users.User `gorm:"notNull"`
+	YearMonth   string
+	Type        TransactionType
+	Currency    string
+	Amount      float64
+	Description string
+}
+
+func NewIncomeTransaction(u *users.User, month string, currency string, amt float64, desc string) *Transaction {
+	return &Transaction{
+		User:        u,
+		YearMonth:   month,
+		Type:        TypeIncome,
+		Currency:    currency,
+		Amount:      amt,
+		Description: desc,
+	}
+}
+
+func NewTransferTransaction(u *users.User, month string, currency string, amt float64, desc string) *Transaction {
+	return &Transaction{
+		User:        u,
+		YearMonth:   month,
+		Type:        TypeTransfer,
+		Currency:    currency,
+		Amount:      amt,
+		Description: desc,
+	}
+}
+
+func NewExpenseTransaction(u *users.User, month string, currency string, amt float64, desc string) *Transaction {
+	return &Transaction{
+		User:        u,
+		YearMonth:   month,
+		Type:        TypeExpense,
+		Currency:    currency,
+		Amount:      amt,
+		Description: desc,
+	}
 }
 
 type TransactionCollection []*Transaction
