@@ -14,24 +14,24 @@ func NewService(db Store) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) AddIncome(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string) (*Transaction, error) {
-	tx := NewIncomeTransaction(u, month, currency, amt, desc)
+func (s *Service) AddIncome(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, tags []string) (*Transaction, error) {
+	tx := NewIncomeTransaction(u, month, currency, amt, desc, tags)
 	if err := s.db.SaveTransaction(ctx, tx); err != nil {
 		return nil, err
 	}
 	return tx, nil
 }
 
-func (s *Service) AddTransfer(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string) (*Transaction, error) {
-	tx := NewTransferTransaction(u, month, currency, amt, desc)
+func (s *Service) AddTransfer(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, tags []string) (*Transaction, error) {
+	tx := NewTransferTransaction(u, month, currency, amt, desc, tags)
 	if err := s.db.SaveTransaction(ctx, tx); err != nil {
 		return nil, err
 	}
 	return tx, nil
 }
 
-func (s *Service) AddExpense(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string) (*Transaction, error) {
-	tx := NewExpenseTransaction(u, month, currency, amt, desc)
+func (s *Service) AddExpense(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, tags []string) (*Transaction, error) {
+	tx := NewExpenseTransaction(u, month, currency, amt, desc, tags)
 	if err := s.db.SaveTransaction(ctx, tx); err != nil {
 		return nil, err
 	}

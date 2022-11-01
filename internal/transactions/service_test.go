@@ -27,7 +27,7 @@ func (ts *TransactionsServiceTestSuite) TestAddIncome() {
 	u := &users.User{}
 	ts.store.On("SaveTransaction", ctx, mock.AnythingOfType("*transactions.Transaction")).
 		Return(nil)
-	tx, err := ts.srv.AddIncome(ctx, u, "2010-10", "usd", 10, "test income transaction")
+	tx, err := ts.srv.AddIncome(ctx, u, "2010-10", "usd", 10, "test income transaction", nil)
 	ts.Require().NoError(err, "Failed to add income transaction.")
 	ts.Require().NotNil(tx)
 }
@@ -37,7 +37,7 @@ func (ts *TransactionsServiceTestSuite) TestAddTransfer() {
 	u := &users.User{}
 	ts.store.On("SaveTransaction", ctx, mock.AnythingOfType("*transactions.Transaction")).
 		Return(nil)
-	tx, err := ts.srv.AddTransfer(ctx, u, "2010-10", "usd", 10, "test transfer transaction")
+	tx, err := ts.srv.AddTransfer(ctx, u, "2010-10", "usd", 10, "test transfer transaction", nil)
 	ts.Require().NoError(err, "Failed to add income transaction.")
 	ts.Require().NotNil(tx)
 }
@@ -47,7 +47,7 @@ func (ts *TransactionsServiceTestSuite) TestAddExpense() {
 	u := &users.User{}
 	ts.store.On("SaveTransaction", ctx, mock.AnythingOfType("*transactions.Transaction")).
 		Return(nil)
-	tx, err := ts.srv.AddExpense(ctx, u, "2010-10", "usd", 10, "test expense transaction")
+	tx, err := ts.srv.AddExpense(ctx, u, "2010-10", "usd", 10, "test expense transaction", nil)
 	ts.Require().NoError(err, "Failed to add income transaction.")
 	ts.Require().NotNil(tx)
 }

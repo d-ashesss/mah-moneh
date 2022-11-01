@@ -3,6 +3,7 @@ package transactions
 import (
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/users"
+	"github.com/lib/pq"
 )
 
 type TransactionType string
@@ -21,9 +22,10 @@ type Transaction struct {
 	Currency    string
 	Amount      float64
 	Description string
+	Tags        pq.StringArray `gorm:"type:text[]"`
 }
 
-func NewIncomeTransaction(u *users.User, month string, currency string, amt float64, desc string) *Transaction {
+func NewIncomeTransaction(u *users.User, month string, currency string, amt float64, desc string, tags []string) *Transaction {
 	return &Transaction{
 		User:        u,
 		YearMonth:   month,
@@ -31,10 +33,11 @@ func NewIncomeTransaction(u *users.User, month string, currency string, amt floa
 		Currency:    currency,
 		Amount:      amt,
 		Description: desc,
+		Tags:        tags,
 	}
 }
 
-func NewTransferTransaction(u *users.User, month string, currency string, amt float64, desc string) *Transaction {
+func NewTransferTransaction(u *users.User, month string, currency string, amt float64, desc string, tags []string) *Transaction {
 	return &Transaction{
 		User:        u,
 		YearMonth:   month,
@@ -42,10 +45,11 @@ func NewTransferTransaction(u *users.User, month string, currency string, amt fl
 		Currency:    currency,
 		Amount:      amt,
 		Description: desc,
+		Tags:        tags,
 	}
 }
 
-func NewExpenseTransaction(u *users.User, month string, currency string, amt float64, desc string) *Transaction {
+func NewExpenseTransaction(u *users.User, month string, currency string, amt float64, desc string, tags []string) *Transaction {
 	return &Transaction{
 		User:        u,
 		YearMonth:   month,
@@ -53,6 +57,7 @@ func NewExpenseTransaction(u *users.User, month string, currency string, amt flo
 		Currency:    currency,
 		Amount:      amt,
 		Description: desc,
+		Tags:        tags,
 	}
 }
 

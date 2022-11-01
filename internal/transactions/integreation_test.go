@@ -49,7 +49,7 @@ func (ts *TransactionsIntegrationTestSuite) SetupTest() {
 
 func (ts *TransactionsIntegrationTestSuite) TestAddIncome() {
 	u := ts.createTestingUser()
-	tx, err := ts.srv.AddIncome(context.Background(), u, "2010-10", "usd", 10, "test add income")
+	tx, err := ts.srv.AddIncome(context.Background(), u, "2010-10", "usd", 10, "test add income", []string{"cookies"})
 	ts.Require().NoError(err, "Failed to create income transaction.")
 	ts.Require().NotNil(tx, "Failed to create income transaction.")
 
@@ -59,12 +59,13 @@ func (ts *TransactionsIntegrationTestSuite) TestAddIncome() {
 	ts.Equal(tx.UUID, foundTx.UUID)
 	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
 	ts.Equal(tx.Description, foundTx.Description)
+	ts.Equal(tx.Tags, foundTx.Tags)
 	ts.Equal(transactions.TypeIncome, foundTx.Type)
 }
 
 func (ts *TransactionsIntegrationTestSuite) TestAddTransfer() {
 	u := ts.createTestingUser()
-	tx, err := ts.srv.AddTransfer(context.Background(), u, "2010-10", "usd", 10, "test add transfer")
+	tx, err := ts.srv.AddTransfer(context.Background(), u, "2010-10", "usd", 10, "test add transfer", []string{"cookies"})
 	ts.Require().NoError(err, "Failed to create transfer transaction.")
 	ts.Require().NotNil(tx, "Failed to create transfer transaction.")
 
@@ -74,12 +75,13 @@ func (ts *TransactionsIntegrationTestSuite) TestAddTransfer() {
 	ts.Equal(tx.UUID, foundTx.UUID)
 	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
 	ts.Equal(tx.Description, foundTx.Description)
+	ts.Equal(tx.Tags, foundTx.Tags)
 	ts.Equal(transactions.TypeTransfer, foundTx.Type)
 }
 
 func (ts *TransactionsIntegrationTestSuite) TestAddExpense() {
 	u := ts.createTestingUser()
-	tx, err := ts.srv.AddExpense(context.Background(), u, "2010-10", "usd", 10, "test add expense")
+	tx, err := ts.srv.AddExpense(context.Background(), u, "2010-10", "usd", 10, "test add expense", []string{"cookies"})
 	ts.Require().NoError(err, "Failed to create expense transaction.")
 	ts.Require().NotNil(tx, "Failed to create expense transaction.")
 
@@ -89,12 +91,13 @@ func (ts *TransactionsIntegrationTestSuite) TestAddExpense() {
 	ts.Equal(tx.UUID, foundTx.UUID)
 	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
 	ts.Equal(tx.Description, foundTx.Description)
+	ts.Equal(tx.Tags, foundTx.Tags)
 	ts.Equal(transactions.TypeExpense, foundTx.Type)
 }
 
 func (ts *TransactionsIntegrationTestSuite) TestDeleteTransaction() {
 	u := ts.createTestingUser()
-	tx := transactions.NewIncomeTransaction(u, "2010-10", "usd", 10, "test delete tx")
+	tx := transactions.NewIncomeTransaction(u, "2010-10", "usd", 10, "test delete tx", nil)
 	err := ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
@@ -108,7 +111,7 @@ func (ts *TransactionsIntegrationTestSuite) TestDeleteTransaction() {
 
 func (ts *TransactionsIntegrationTestSuite) TestGetTransaction() {
 	u := ts.createTestingUser()
-	tx := transactions.NewIncomeTransaction(u, "2010-10", "usd", 10, "test get tx")
+	tx := transactions.NewIncomeTransaction(u, "2010-10", "usd", 10, "test get tx", nil)
 	err := ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
@@ -129,23 +132,23 @@ func (ts *TransactionsIntegrationTestSuite) TestGetUserTransactions() {
 		err error
 	)
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-11", "usd", 10, "test tx")
+	tx = transactions.NewIncomeTransaction(u1, "2010-11", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-10", "usd", 10, "test tx")
+	tx = transactions.NewIncomeTransaction(u1, "2010-10", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-10", "usd", 10, "test tx")
+	tx = transactions.NewIncomeTransaction(u1, "2010-10", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-09", "usd", 10, "test tx")
+	tx = transactions.NewIncomeTransaction(u1, "2010-09", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u2, "2010-10", "usd", 10, "test tx")
+	tx = transactions.NewIncomeTransaction(u2, "2010-10", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
