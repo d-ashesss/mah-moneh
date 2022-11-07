@@ -10,3 +10,7 @@ type Category struct {
 	Name string
 	Tags pq.StringArray `gorm:"type:text[]"`
 }
+
+func NewCategory(name string, tags []string) *Category {
+	return &Category{Name: name, Tags: tags}
+}
