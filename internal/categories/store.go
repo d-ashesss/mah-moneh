@@ -19,11 +19,9 @@ func NewGormStore(db *gorm.DB) Store {
 }
 
 func (g *gormStore) SaveCategory(ctx context.Context, cat *Category) error {
-	//TODO implement me
-	panic("implement SaveCategory")
+	return g.db.WithContext(ctx).Save(cat).Error
 }
 
 func (g *gormStore) DeleteCategory(ctx context.Context, cat *Category) error {
-	//TODO implement me
-	panic("implement DeleteCategory")
+	return g.db.WithContext(ctx).Delete(cat).Error
 }
