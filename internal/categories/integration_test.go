@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
+	"github.com/d-ashesss/mah-moneh/internal/users"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -46,7 +48,8 @@ func (ts *CategoriesIntegrationTestSuite) SetupTest() {
 }
 
 func (ts *CategoriesIntegrationTestSuite) TestSaveCategory() {
-	cat, err := ts.srv.CreateCategory(context.Background(), "create-test-category", []string{})
+	u := ts.createTestingUser()
+	cat, err := ts.srv.CreateCategory(context.Background(), u, "create-test-category", []string{})
 	ts.Require().NoError(err, "Failed to create a category.")
 	ts.Require().NotNil(cat, "Received invalid category.")
 
@@ -58,7 +61,8 @@ func (ts *CategoriesIntegrationTestSuite) TestSaveCategory() {
 }
 
 func (ts *CategoriesIntegrationTestSuite) TestDeleteCategory() {
-	cat := categories.NewCategory("delete-test-category", []string{})
+	u := ts.createTestingUser()
+	cat := categories.NewCategory(u, "delete-test-category", []string{})
 	err := ts.db.Save(cat).Error
 	ts.Require().NoError(err, "Failed to create testing category.")
 
@@ -68,6 +72,42 @@ func (ts *CategoriesIntegrationTestSuite) TestDeleteCategory() {
 	foundCat := &categories.Category{}
 	err = ts.db.First(foundCat, "uuid = ?", cat.UUID).Error
 	ts.Require().ErrorIs(err, gorm.ErrRecordNotFound, "Deleted category should not be found.")
+}
+
+func (ts *CategoriesIntegrationTestSuite) TestGetUserCategories() {
+	u1 := ts.createTestingUser()
+	u2 := ts.createTestingUser()
+	var (
+		cat  *categories.Category
+		cats []*categories.Category
+		err  error
+	)
+
+	cat = categories.NewCategory(u1, "u1 cat1", []string{})
+	err = ts.db.Save(cat).Error
+	ts.Require().NoError(err, "Failed to create testing category.")
+
+	cat = categories.NewCategory(u1, "u1 cat2", []string{})
+	err = ts.db.Save(cat).Error
+	ts.Require().NoError(err, "Failed to create testing category.")
+
+	cat = categories.NewCategory(u2, "u2 cat1", []string{})
+	err = ts.db.Save(cat).Error
+	ts.Require().NoError(err, "Failed to create testing category.")
+
+	cats, err = ts.srv.GetUserCategories(context.Background(), u1)
+	ts.Require().NoError(err, "Failed to get user's categories.")
+	ts.Len(cats, 2, "Got invalid number of categories.")
+
+	cats, err = ts.srv.GetUserCategories(context.Background(), u2)
+	ts.Require().NoError(err, "Failed to get user's categories.")
+	ts.Len(cats, 1, "Got invalid number of categories.")
+}
+
+func (ts *CategoriesIntegrationTestSuite) createTestingUser() *users.User {
+	ts.T().Helper()
+	UUID, _ := uuid.NewV4()
+	return &users.User{UUID: UUID}
 }
 
 func TestCategoriesIntegration(t *testing.T) {
