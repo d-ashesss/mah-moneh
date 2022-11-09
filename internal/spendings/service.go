@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/capital"
+	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"time"
@@ -17,15 +18,20 @@ type TransactionsService interface {
 	GetUserTransactions(ctx context.Context, u *users.User, month string) (transactions.TransactionCollection, error)
 }
 
+type CategoryService interface {
+	GetUserCategories(ctx context.Context, u *users.User) ([]*categories.Category, error)
+}
+
 // Service is a service responsible for calculating spendings.
 type Service struct {
 	capital      CapitalService
 	transactions TransactionsService
+	categories   CategoryService
 }
 
 // NewService initializes the spendings service.
-func NewService(cs CapitalService, ts TransactionsService) *Service {
-	return &Service{capital: cs, transactions: ts}
+func NewService(capSrv CapitalService, transSrv TransactionsService, catSrv CategoryService) *Service {
+	return &Service{capital: capSrv, transactions: transSrv, categories: catSrv}
 }
 
 // GetMonthSpendings calculates funds spent during specified month.
@@ -42,14 +48,19 @@ func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month st
 	if err != nil {
 		return nil, err
 	}
-	accounted, err := s.getTransactionSummary(ctx, u, month)
+	categorized, uncategorized, err := s.getTransactionSummary(ctx, u, month)
 	if err != nil {
 		return nil, err
 	}
-	totalSpent := s.subtractAmounts(currentCapital.Amounts, prevCapital.Amounts)
+	totalSpent := subtractAmounts(currentCapital.Amounts, prevCapital.Amounts)
+	unaccounted := subtractAmounts(totalSpent, uncategorized)
+	for _, spent := range categorized {
+		unaccounted = subtractAmounts(unaccounted, spent)
+	}
 	sp := &Spending{
-		Uncategorized: accounted,
-		Unaccounted:   s.subtractAmounts(totalSpent, accounted),
+		ByCategory:    categorized,
+		Uncategorized: uncategorized,
+		Unaccounted:   unaccounted,
 	}
 	return sp, nil
 }
@@ -64,20 +75,37 @@ func getPrevMonth(month string) (string, error) {
 }
 
 // getTransactionSummary calculates the sum of transactions recorded during given month.
-func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, month string) (map[string]float64, error) {
+func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, month string) (map[*categories.Category]map[string]float64, map[string]float64, error) {
+	sumByCat := make(map[*categories.Category]map[string]float64)
 	sum := make(map[string]float64)
 	txs, err := s.transactions.GetUserTransactions(ctx, u, month)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+	cats, err := s.categories.GetUserCategories(ctx, u)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, cat := range cats {
+		if _, ok := sumByCat[cat]; !ok {
+			sumByCat[cat] = make(map[string]float64)
+		}
+	}
+txloop:
 	for _, tx := range txs {
+		for _, cat := range cats {
+			if isSubset(cat.Tags, tx.Tags) {
+				sumByCat[cat][tx.Currency] += tx.Amount
+				continue txloop
+			}
+		}
 		sum[tx.Currency] += tx.Amount
 	}
-	return sum, nil
+	return sumByCat, sum, nil
 }
 
 // subtractAmounts subtracts multi-currency amounts
-func (s *Service) subtractAmounts(minuend, subtrahend map[string]float64) map[string]float64 {
+func subtractAmounts(minuend, subtrahend map[string]float64) map[string]float64 {
 	rest := make(map[string]float64)
 	for currency, amount := range minuend {
 		rest[currency] = amount
@@ -86,4 +114,18 @@ func (s *Service) subtractAmounts(minuend, subtrahend map[string]float64) map[st
 		rest[currency] -= amount
 	}
 	return rest
+}
+
+// isSubset determines if a slice is a subset of another slice
+func isSubset(subset, in []string) bool {
+	set := make(map[string]bool)
+	for _, str := range in {
+		set[str] = true
+	}
+	for _, str := range subset {
+		if _, found := set[str]; !found {
+			return false
+		}
+	}
+	return true
 }
