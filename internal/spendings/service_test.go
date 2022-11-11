@@ -42,20 +42,19 @@ func (ts *CapitalServiceTestSuite) TestGetMonthSpendings() {
 	}}
 	ts.capital.On("GetCapital", ctx, u, "2009-12").Return(prevCap, nil)
 	ts.capital.On("GetCapital", ctx, u, "2010-01").Return(currentCap, nil)
+	catIncome := &categories.Category{}
+	catEmpty := &categories.Category{}
+	catSomething := &categories.Category{}
+	ts.categories.On("GetUserCategories", ctx, u).Return([]*categories.Category{catIncome, catEmpty, catSomething}, nil)
 	txs := transactions.TransactionCollection{
-		&transactions.Transaction{Type: transactions.TypeExpense, Amount: -8, Currency: "usd"},
-		&transactions.Transaction{Type: transactions.TypeIncome, Amount: 5, Currency: "usd", Tags: []string{"income"}},
-		&transactions.Transaction{Type: transactions.TypeExpense, Amount: -3, Currency: "eur"},
-		&transactions.Transaction{Type: transactions.TypeExpense, Amount: -2, Currency: "eur", Tags: []string{"some", "thing"}},
-		&transactions.Transaction{Type: transactions.TypeTransfer, Amount: -4, Currency: "eth"},
-		&transactions.Transaction{Type: transactions.TypeIncome, Amount: 2, Currency: "btc", Tags: []string{"income"}},
+		&transactions.Transaction{Amount: -8, Currency: "usd"},
+		&transactions.Transaction{Amount: 5, Currency: "usd", Category: catIncome},
+		&transactions.Transaction{Amount: -3, Currency: "eur"},
+		&transactions.Transaction{Amount: -2, Currency: "eur", Category: catSomething},
+		&transactions.Transaction{Amount: -4, Currency: "eth"},
+		&transactions.Transaction{Amount: 2, Currency: "btc", Category: catIncome},
 	}
 	ts.transactions.On("GetUserTransactions", ctx, u, "2010-01").Return(txs, nil)
-	catIncome := &categories.Category{Tags: []string{"income"}}
-	catNothing := &categories.Category{Tags: []string{"nothing"}}
-	catSome := &categories.Category{Tags: []string{"some"}}
-	catSome2 := &categories.Category{Tags: []string{"some"}}
-	ts.categories.On("GetUserCategories", ctx, u).Return([]*categories.Category{catIncome, catNothing, catSome, catSome2}, nil)
 	spending, err := ts.srv.GetMonthSpendings(ctx, u, "2010-01")
 	ts.Require().NoError(err, "Failed to get spendings.")
 
@@ -64,21 +63,15 @@ func (ts *CapitalServiceTestSuite) TestGetMonthSpendings() {
 	ts.InDelta(0.0, spending.ByCategory[catIncome]["eth"], 0.001)
 	ts.InDelta(2.0, spending.ByCategory[catIncome]["btc"], 0.001)
 
-	ts.InDelta(0.0, spending.ByCategory[catNothing]["usd"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catNothing]["eur"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catNothing]["eth"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catNothing]["btc"], 0.001)
+	ts.InDelta(0.0, spending.ByCategory[catEmpty]["usd"], 0.001)
+	ts.InDelta(0.0, spending.ByCategory[catEmpty]["eur"], 0.001)
+	ts.InDelta(0.0, spending.ByCategory[catEmpty]["eth"], 0.001)
+	ts.InDelta(0.0, spending.ByCategory[catEmpty]["btc"], 0.001)
 
-	ts.InDelta(0.0, spending.ByCategory[catSome]["usd"], 0.001)
-	ts.InDelta(-2.0, spending.ByCategory[catSome]["eur"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catSome]["eth"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catSome]["btc"], 0.001)
-
-	// in future catSome2 should be equal to catSome
-	ts.InDelta(0.0, spending.ByCategory[catSome2]["usd"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catSome2]["eur"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catSome2]["eth"], 0.001)
-	ts.InDelta(0.0, spending.ByCategory[catSome2]["btc"], 0.001)
+	ts.InDelta(0.0, spending.ByCategory[catSomething]["usd"], 0.001)
+	ts.InDelta(-2.0, spending.ByCategory[catSomething]["eur"], 0.001)
+	ts.InDelta(0.0, spending.ByCategory[catSomething]["eth"], 0.001)
+	ts.InDelta(0.0, spending.ByCategory[catSomething]["btc"], 0.001)
 
 	ts.InDelta(-8.0, spending.Uncategorized["usd"], 0.001)
 	ts.InDelta(-3.0, spending.Uncategorized["eur"], 0.001)

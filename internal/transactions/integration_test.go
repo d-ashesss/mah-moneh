@@ -3,6 +3,7 @@ package transactions_test
 import (
 	"context"
 	"fmt"
+	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
@@ -43,13 +44,16 @@ func (ts *TransactionsIntegrationTestSuite) SetupSuite() {
 }
 
 func (ts *TransactionsIntegrationTestSuite) SetupTest() {
-	_ = ts.db.Migrator().DropTable(&transactions.Transaction{})
-	_ = ts.db.AutoMigrate(&transactions.Transaction{})
+	var err error
+	err = ts.db.Migrator().DropTable(&transactions.Transaction{}, &categories.Category{})
+	ts.Require().NoError(err, "Failed to drop required tables.")
+	err = ts.db.Migrator().CreateTable(&categories.Category{}, &transactions.Transaction{})
+	ts.Require().NoError(err, "Failed to migrade required tables.")
 }
 
-func (ts *TransactionsIntegrationTestSuite) TestAddIncome() {
+func (ts *TransactionsIntegrationTestSuite) TestCreateTransaction() {
 	u := ts.createTestingUser()
-	tx, err := ts.srv.AddIncome(context.Background(), u, "2010-10", "usd", 10, "test add income", []string{"cookies"})
+	tx, err := ts.srv.CreateTransaction(context.Background(), u, "2010-10", "usd", 10, "test add income", nil)
 	ts.Require().NoError(err, "Failed to create income transaction.")
 	ts.Require().NotNil(tx, "Failed to create income transaction.")
 
@@ -59,45 +63,34 @@ func (ts *TransactionsIntegrationTestSuite) TestAddIncome() {
 	ts.Equal(tx.UUID, foundTx.UUID)
 	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
 	ts.Equal(tx.Description, foundTx.Description)
-	ts.Equal(tx.Tags, foundTx.Tags)
-	ts.Equal(transactions.TypeIncome, foundTx.Type)
+	ts.Nil(foundTx.CategoryUUID)
+	ts.Nil(foundTx.Category)
 }
 
-func (ts *TransactionsIntegrationTestSuite) TestAddTransfer() {
+func (ts *TransactionsIntegrationTestSuite) TestCreateTransactionWithCategory() {
 	u := ts.createTestingUser()
-	tx, err := ts.srv.AddTransfer(context.Background(), u, "2010-10", "usd", 10, "test add transfer", []string{"cookies"})
-	ts.Require().NoError(err, "Failed to create transfer transaction.")
-	ts.Require().NotNil(tx, "Failed to create transfer transaction.")
+	cat := categories.NewCategory(u, "test-category")
+	err := ts.db.Save(cat).Error
+	ts.Require().NoError(err, "Failed to save testing category.")
+
+	tx, err := ts.srv.CreateTransaction(context.Background(), u, "2010-10", "usd", 10, "test add income", cat)
+	ts.Require().NoError(err, "Failed to create income transaction.")
+	ts.Require().NotNil(tx, "Failed to create income transaction.")
 
 	foundTx := &transactions.Transaction{}
-	err = ts.db.First(foundTx, "uuid = ?", tx.UUID).Error
+	err = ts.db.Preload("Category").First(foundTx, "uuid = ?", tx.UUID).Error
 	ts.Require().NoError(err, "Failed to find created transaction")
 	ts.Equal(tx.UUID, foundTx.UUID)
 	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
 	ts.Equal(tx.Description, foundTx.Description)
-	ts.Equal(tx.Tags, foundTx.Tags)
-	ts.Equal(transactions.TypeTransfer, foundTx.Type)
-}
-
-func (ts *TransactionsIntegrationTestSuite) TestAddExpense() {
-	u := ts.createTestingUser()
-	tx, err := ts.srv.AddExpense(context.Background(), u, "2010-10", "usd", 10, "test add expense", []string{"cookies"})
-	ts.Require().NoError(err, "Failed to create expense transaction.")
-	ts.Require().NotNil(tx, "Failed to create expense transaction.")
-
-	foundTx := &transactions.Transaction{}
-	err = ts.db.First(foundTx, "uuid = ?", tx.UUID).Error
-	ts.Require().NoError(err, "Failed to find created transaction")
-	ts.Equal(tx.UUID, foundTx.UUID)
-	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
-	ts.Equal(tx.Description, foundTx.Description)
-	ts.Equal(tx.Tags, foundTx.Tags)
-	ts.Equal(transactions.TypeExpense, foundTx.Type)
+	ts.NotEmpty(foundTx.CategoryUUID)
+	ts.NotEmpty(foundTx.Category)
+	ts.Equal(cat.UUID.String(), foundTx.CategoryUUID.String())
 }
 
 func (ts *TransactionsIntegrationTestSuite) TestDeleteTransaction() {
 	u := ts.createTestingUser()
-	tx := transactions.NewIncomeTransaction(u, "2010-10", "usd", 10, "test delete tx", nil)
+	tx := transactions.NewTransaction(u, "2010-10", "usd", 10, "test delete tx", nil)
 	err := ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
@@ -111,7 +104,7 @@ func (ts *TransactionsIntegrationTestSuite) TestDeleteTransaction() {
 
 func (ts *TransactionsIntegrationTestSuite) TestGetTransaction() {
 	u := ts.createTestingUser()
-	tx := transactions.NewIncomeTransaction(u, "2010-10", "usd", 10, "test get tx", nil)
+	tx := transactions.NewTransaction(u, "2010-10", "usd", 10, "test get tx", nil)
 	err := ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
@@ -120,7 +113,28 @@ func (ts *TransactionsIntegrationTestSuite) TestGetTransaction() {
 	ts.Equal(tx.UUID, foundTx.UUID)
 	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
 	ts.Equal(tx.Description, foundTx.Description)
-	ts.Equal(tx.Type, foundTx.Type)
+	ts.Nil(foundTx.CategoryUUID)
+	ts.Nil(foundTx.Category)
+}
+
+func (ts *TransactionsIntegrationTestSuite) TestGetTransactionWithCategory() {
+	u := ts.createTestingUser()
+	cat := categories.NewCategory(u, "test-category")
+	err := ts.db.Save(cat).Error
+	ts.Require().NoError(err, "Failed to save testing category.")
+
+	tx := transactions.NewTransaction(u, "2010-10", "usd", 10, "test get tx", cat)
+	err = ts.db.Save(tx).Error
+	ts.Require().NoError(err, "Failed to save the transaction.")
+
+	foundTx, err := ts.srv.GetTransaction(context.Background(), tx.UUID)
+	ts.Require().NoError(err, "Failed to find created transaction")
+	ts.Equal(tx.UUID, foundTx.UUID)
+	ts.InDelta(tx.Amount, foundTx.Amount, 0.001)
+	ts.Equal(tx.Description, foundTx.Description)
+	ts.NotEmpty(foundTx.CategoryUUID)
+	ts.NotEmpty(foundTx.Category)
+	ts.Equal(cat.UUID.String(), foundTx.CategoryUUID.String())
 }
 
 func (ts *TransactionsIntegrationTestSuite) TestGetUserTransactions() {
@@ -132,33 +146,41 @@ func (ts *TransactionsIntegrationTestSuite) TestGetUserTransactions() {
 		err error
 	)
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-11", "usd", 10, "test tx", nil)
+	cat := categories.NewCategory(u1, "test-category-u1")
+	err = ts.db.Save(cat).Error
+	ts.Require().NoError(err, "Failed to save testing category.")
+
+	tx = transactions.NewTransaction(u1, "2010-11", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-10", "usd", 10, "test tx", nil)
+	tx = transactions.NewTransaction(u1, "2010-10", "usd", 10, "test tx", cat)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-10", "usd", 10, "test tx", nil)
+	tx = transactions.NewTransaction(u1, "2010-10", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u1, "2010-09", "usd", 10, "test tx", nil)
+	tx = transactions.NewTransaction(u1, "2010-09", "usd", 10, "test tx", cat)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
-	tx = transactions.NewIncomeTransaction(u2, "2010-10", "usd", 10, "test tx", nil)
+	tx = transactions.NewTransaction(u2, "2010-10", "usd", 10, "test tx", nil)
 	err = ts.db.Save(tx).Error
 	ts.Require().NoError(err, "Failed to save the transaction.")
 
 	txs, err = ts.srv.GetUserTransactions(context.Background(), u1, "2010-10")
 	ts.Require().NoError(err, "Failed to get user's transactions.")
 	ts.Len(txs, 2)
+	ts.NotEmpty(txs[0].Category)
+	ts.Nil(txs[1].Category)
 
 	txs, err = ts.srv.GetUserTransactions(context.Background(), u1, "2010-09")
 	ts.Require().NoError(err, "Failed to get user's transactions.")
 	ts.Len(txs, 1)
+	ts.NotEmpty(txs[0].Category)
+
 }
 
 func (ts *TransactionsIntegrationTestSuite) createTestingUser() *users.User {

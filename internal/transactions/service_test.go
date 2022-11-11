@@ -22,32 +22,12 @@ func (ts *TransactionsServiceTestSuite) SetupTest() {
 	ts.srv = transactions.NewService(ts.store)
 }
 
-func (ts *TransactionsServiceTestSuite) TestAddIncome() {
+func (ts *TransactionsServiceTestSuite) TestCreateTransaction() {
 	ctx := context.Background()
 	u := &users.User{}
 	ts.store.On("SaveTransaction", ctx, mock.AnythingOfType("*transactions.Transaction")).
 		Return(nil)
-	tx, err := ts.srv.AddIncome(ctx, u, "2010-10", "usd", 10, "test income transaction", nil)
-	ts.Require().NoError(err, "Failed to add income transaction.")
-	ts.Require().NotNil(tx)
-}
-
-func (ts *TransactionsServiceTestSuite) TestAddTransfer() {
-	ctx := context.Background()
-	u := &users.User{}
-	ts.store.On("SaveTransaction", ctx, mock.AnythingOfType("*transactions.Transaction")).
-		Return(nil)
-	tx, err := ts.srv.AddTransfer(ctx, u, "2010-10", "usd", 10, "test transfer transaction", nil)
-	ts.Require().NoError(err, "Failed to add income transaction.")
-	ts.Require().NotNil(tx)
-}
-
-func (ts *TransactionsServiceTestSuite) TestAddExpense() {
-	ctx := context.Background()
-	u := &users.User{}
-	ts.store.On("SaveTransaction", ctx, mock.AnythingOfType("*transactions.Transaction")).
-		Return(nil)
-	tx, err := ts.srv.AddExpense(ctx, u, "2010-10", "usd", 10, "test expense transaction", nil)
+	tx, err := ts.srv.CreateTransaction(ctx, u, "2010-10", "usd", 10, "test income transaction", nil)
 	ts.Require().NoError(err, "Failed to add income transaction.")
 	ts.Require().NotNil(tx)
 }

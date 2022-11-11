@@ -43,13 +43,16 @@ func (ts *CategoriesIntegrationTestSuite) SetupSuite() {
 }
 
 func (ts *CategoriesIntegrationTestSuite) SetupTest() {
-	_ = ts.db.Migrator().DropTable(&categories.Category{})
-	_ = ts.db.AutoMigrate(&categories.Category{})
+	var err error
+	err = ts.db.Migrator().DropTable(&categories.Category{})
+	ts.Require().NoError(err, "Failed to drop required tables.")
+	err = ts.db.Migrator().CreateTable(&categories.Category{})
+	ts.Require().NoError(err, "Failed to migrade required tables.")
 }
 
 func (ts *CategoriesIntegrationTestSuite) TestSaveCategory() {
 	u := ts.createTestingUser()
-	cat, err := ts.srv.CreateCategory(context.Background(), u, "create-test-category", []string{})
+	cat, err := ts.srv.CreateCategory(context.Background(), u, "create-test-category")
 	ts.Require().NoError(err, "Failed to create a category.")
 	ts.Require().NotNil(cat, "Received invalid category.")
 
@@ -62,7 +65,7 @@ func (ts *CategoriesIntegrationTestSuite) TestSaveCategory() {
 
 func (ts *CategoriesIntegrationTestSuite) TestDeleteCategory() {
 	u := ts.createTestingUser()
-	cat := categories.NewCategory(u, "delete-test-category", []string{})
+	cat := categories.NewCategory(u, "delete-test-category")
 	err := ts.db.Save(cat).Error
 	ts.Require().NoError(err, "Failed to create testing category.")
 
@@ -83,15 +86,15 @@ func (ts *CategoriesIntegrationTestSuite) TestGetUserCategories() {
 		err  error
 	)
 
-	cat = categories.NewCategory(u1, "u1 cat1", []string{})
+	cat = categories.NewCategory(u1, "u1 cat1")
 	err = ts.db.Save(cat).Error
 	ts.Require().NoError(err, "Failed to create testing category.")
 
-	cat = categories.NewCategory(u1, "u1 cat2", []string{})
+	cat = categories.NewCategory(u1, "u1 cat2")
 	err = ts.db.Save(cat).Error
 	ts.Require().NoError(err, "Failed to create testing category.")
 
-	cat = categories.NewCategory(u2, "u2 cat1", []string{})
+	cat = categories.NewCategory(u2, "u2 cat1")
 	err = ts.db.Save(cat).Error
 	ts.Require().NoError(err, "Failed to create testing category.")
 

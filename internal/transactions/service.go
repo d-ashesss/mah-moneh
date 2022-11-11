@@ -2,6 +2,7 @@ package transactions
 
 import (
 	"context"
+	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 )
@@ -14,24 +15,8 @@ func NewService(db Store) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) AddIncome(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, tags []string) (*Transaction, error) {
-	tx := NewIncomeTransaction(u, month, currency, amt, desc, tags)
-	if err := s.db.SaveTransaction(ctx, tx); err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-func (s *Service) AddTransfer(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, tags []string) (*Transaction, error) {
-	tx := NewTransferTransaction(u, month, currency, amt, desc, tags)
-	if err := s.db.SaveTransaction(ctx, tx); err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-func (s *Service) AddExpense(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, tags []string) (*Transaction, error) {
-	tx := NewExpenseTransaction(u, month, currency, amt, desc, tags)
+func (s *Service) CreateTransaction(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, cat *categories.Category) (*Transaction, error) {
+	tx := NewTransaction(u, month, currency, amt, desc, cat)
 	if err := s.db.SaveTransaction(ctx, tx); err != nil {
 		return nil, err
 	}

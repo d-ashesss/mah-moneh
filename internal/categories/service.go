@@ -13,8 +13,8 @@ func NewService(db Store) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) CreateCategory(ctx context.Context, u *users.User, name string, tags []string) (*Category, error) {
-	cat := NewCategory(u, name, tags)
+func (s *Service) CreateCategory(ctx context.Context, u *users.User, name string) (*Category, error) {
+	cat := NewCategory(u, name)
 	if err := s.db.SaveCategory(ctx, cat); err != nil {
 		return nil, err
 	}

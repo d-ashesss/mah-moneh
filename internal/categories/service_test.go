@@ -25,7 +25,7 @@ func (ts *CategoriesServiceTestSuite) TestCreateCategory() {
 	ctx := context.Background()
 	ts.store.On("SaveCategory", ctx, mock.AnythingOfType("*categories.Category")).Return(nil)
 	u := &users.User{}
-	cat, err := ts.srv.CreateCategory(ctx, u, "test-cat", []string{})
+	cat, err := ts.srv.CreateCategory(ctx, u, "test-cat")
 	ts.Require().NoError(err, "Failed to create category.")
 	ts.Require().NotNil(cat, "Received nil category.")
 }

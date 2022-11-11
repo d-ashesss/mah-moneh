@@ -91,13 +91,10 @@ func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, mont
 			sumByCat[cat] = make(map[string]float64)
 		}
 	}
-txloop:
 	for _, tx := range txs {
-		for _, cat := range cats {
-			if isSubset(cat.Tags, tx.Tags) {
-				sumByCat[cat][tx.Currency] += tx.Amount
-				continue txloop
-			}
+		if _, found := sumByCat[tx.Category]; found {
+			sumByCat[tx.Category][tx.Currency] += tx.Amount
+			continue
 		}
 		sum[tx.Currency] += tx.Amount
 	}
@@ -114,18 +111,4 @@ func subtractAmounts(minuend, subtrahend map[string]float64) map[string]float64 
 		rest[currency] -= amount
 	}
 	return rest
-}
-
-// isSubset determines if a slice is a subset of another slice
-func isSubset(subset, in []string) bool {
-	set := make(map[string]bool)
-	for _, str := range in {
-		set[str] = true
-	}
-	for _, str := range subset {
-		if _, found := set[str]; !found {
-			return false
-		}
-	}
-	return true
 }
