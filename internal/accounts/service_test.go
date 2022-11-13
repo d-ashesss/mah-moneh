@@ -79,7 +79,7 @@ func (ts *AccountsServiceTestSuite) TestGetUserAccounts() {
 func (ts *AccountsServiceTestSuite) TestSetAccountCurrentAmount() {
 	ctx := context.Background()
 	acc := &accounts.Account{}
-	ts.store.On("SetAccountAmount", ctx, acc, mock.AnythingOfType("string"), "usd", 10.).
+	ts.store.On("SetAccountAmount", ctx, acc, mock.AnythingOfType("string"), "usd", 10.0).
 		Return(nil).Once()
 
 	err := ts.srv.SetAccountCurrentAmount(ctx, acc, "usd", 10)

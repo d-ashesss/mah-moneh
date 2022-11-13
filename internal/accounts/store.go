@@ -76,15 +76,44 @@ func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, month st
 	}).Save(a).Error
 }
 
-func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
-	amounts := make([]*Amount, 0)
+func (s *gormStore) GetAccountAmount(ctx context.Context, acc *Account, month string, currency string) (*Amount, error) {
+	amount := &Amount{}
 	if err := s.db.WithContext(ctx).
-		Distinct("currency_code").
-		Select("*").
 		Where("account_uuid = ?", acc.UUID).
 		Where("year_month <= ?", month).
-		Find(&amounts).Error; err != nil {
+		Where("currency_code = ?", currency).
+		Order("year_month desc").
+		First(amount).Error; err != nil {
 		return nil, err
 	}
-	return NewAmountCollection(amounts), nil
+	return amount, nil
+}
+
+func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
+	currencies, err := s.GetAccountCurrencies(ctx, acc)
+	if err != nil {
+		return nil, err
+	}
+	amounts := make(AmountCollection, 0)
+	for _, curr := range currencies {
+		amount, err := s.GetAccountAmount(ctx, acc, month, curr)
+		if err != nil {
+			return nil, err
+		}
+		amounts = append(amounts, amount)
+	}
+	return amounts, nil
+}
+
+func (s *gormStore) GetAccountCurrencies(ctx context.Context, acc *Account) ([]string, error) {
+	var currencies []string
+	err := s.db.WithContext(ctx).
+		Model(&Amount{}).
+		Distinct().
+		Where("account_uuid = ?", acc.UUID).
+		Pluck("currency_code", &currencies).Error
+	if err != nil {
+		return nil, err
+	}
+	return currencies, nil
 }

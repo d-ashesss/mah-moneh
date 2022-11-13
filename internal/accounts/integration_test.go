@@ -162,7 +162,7 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountAmounts() {
 	acc := ts.createTestingAccount(u, "test-get-account-amounts")
 	var (
 		amount  *accounts.Amount
-		amounts accounts.AmountCollection
+		amounts accounts.CurrencyAmounts
 		err     error
 	)
 
@@ -193,20 +193,20 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountAmounts() {
 	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-11")
 	ts.Require().NoError(err, "Failed to get amounts on the account.")
 	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
-	ts.InDelta(10.0, amounts["usd"].Amount, 0.001, "Invalid amount on account.")
-	ts.InDelta(15.0, amounts["eur"].Amount, 0.001, "Invalid amount on account.")
+	ts.InDelta(10.0, amounts["usd"], 0.001, "Invalid amount on account.")
+	ts.InDelta(15.0, amounts["eur"], 0.001, "Invalid amount on account.")
 
 	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-10")
 	ts.Require().NoError(err, "Failed to get amounts on the account.")
 	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
-	ts.InDelta(10.0, amounts["usd"].Amount, 0.001, "Invalid amount on account.")
-	ts.InDelta(15.0, amounts["eur"].Amount, 0.001, "Invalid amount on account.")
+	ts.InDelta(10.0, amounts["usd"], 0.001, "Invalid amount on account.")
+	ts.InDelta(15.0, amounts["eur"], 0.001, "Invalid amount on account.")
 
 	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-09")
 	ts.Require().NoError(err, "Failed to get amounts on the account.")
 	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
-	ts.InDelta(20.0, amounts["usd"].Amount, 0.001, "Invalid amount on account.")
-	ts.InDelta(35.0, amounts["eur"].Amount, 0.001, "Invalid amount on account.")
+	ts.InDelta(20.0, amounts["usd"], 0.001, "Invalid amount on account.")
+	ts.InDelta(35.0, amounts["eur"], 0.001, "Invalid amount on account.")
 }
 
 func (ts *AccountsIntegrationTestSuite) TestGetAccountCurrentAmounts() {
@@ -214,7 +214,7 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountCurrentAmounts() {
 	acc := ts.createTestingAccount(u, "test-set-account-amount")
 	var (
 		amount  *accounts.Amount
-		amounts accounts.AmountCollection
+		amounts accounts.CurrencyAmounts
 		err     error
 	)
 
@@ -229,7 +229,7 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountCurrentAmounts() {
 	amounts, err = ts.srv.GetAccountCurrentAmounts(context.Background(), acc)
 	ts.Require().NoError(err, "Failed to get amounts on the account.")
 	ts.Require().Len(amounts, 1, "Invalid set of amounts returned.")
-	ts.InDelta(5.0, amounts["usd"].Amount, 0.001, "Invalid amount on account.")
+	ts.InDelta(5.0, amounts["usd"], 0.001, "Invalid amount on account.")
 
 	month := time.Now().Format(accounts.FmtYearMonth)
 
@@ -244,8 +244,8 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountCurrentAmounts() {
 	amounts, err = ts.srv.GetAccountCurrentAmounts(context.Background(), acc)
 	ts.Require().NoError(err, "Failed to get amounts on the account.")
 	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
-	ts.InDelta(11.5, amounts["usd"].Amount, 0.001, "Invalid amount on account.")
-	ts.InDelta(27.3, amounts["eur"].Amount, 0.001, "Invalid amount on account.")
+	ts.InDelta(11.5, amounts["usd"], 0.001, "Invalid amount on account.")
+	ts.InDelta(27.3, amounts["eur"], 0.001, "Invalid amount on account.")
 }
 
 func (ts *AccountsIntegrationTestSuite) createTestingUser() *users.User {

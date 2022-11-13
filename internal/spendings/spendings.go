@@ -1,6 +1,7 @@
 package spendings
 
 import (
+	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 )
@@ -19,19 +20,19 @@ type Spendings interface {
 }
 
 // spendings contains calculated funds changes for a specific period of time.
-type spendings map[*categories.Category]map[string]float64
+type spendings map[*categories.Category]accounts.CurrencyAmounts
 
-// newSpendings initializes new spending structure.
+// newSpendings initializes new spendings structure.
 func newSpendings(cats []*categories.Category) spendings {
 	spent := make(spendings)
 	for _, cat := range cats {
 		if _, ok := spent[cat]; !ok {
-			spent[cat] = make(map[string]float64)
+			spent[cat] = accounts.NewCurrencyAmounts()
 		}
 	}
-	spent[Uncategorized] = make(map[string]float64)
-	spent[Unaccounted] = make(map[string]float64)
-	spent[Total] = make(map[string]float64)
+	spent[Uncategorized] = accounts.NewCurrencyAmounts()
+	spent[Unaccounted] = accounts.NewCurrencyAmounts()
+	spent[Total] = accounts.NewCurrencyAmounts()
 	return spent
 }
 

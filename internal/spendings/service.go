@@ -40,11 +40,11 @@ func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month st
 	if err != nil {
 		return nil, err
 	}
-	actualDiff, err := s.getCapitalDiff(ctx, u, month)
+	capt, err := s.getCapitalDiff(ctx, u, month)
 	if err != nil {
 		return nil, err
 	}
-	spent[Unaccounted] = subtractAmounts(actualDiff, spent[Total])
+	spent[Unaccounted] = capt.Diff(spent[Total])
 	return spent, nil
 }
 
@@ -58,7 +58,7 @@ func getPrevMonth(month string) (string, error) {
 }
 
 // getCapitalDiff calculates the difference between specified month and previous month capitals.
-func (s *Service) getCapitalDiff(ctx context.Context, u *users.User, month string) (map[string]float64, error) {
+func (s *Service) getCapitalDiff(ctx context.Context, u *users.User, month string) (accounts.CurrencyAmounts, error) {
 	currentCapital, err := s.capital.GetCapital(ctx, u, month)
 	if err != nil {
 		return nil, err
@@ -71,8 +71,7 @@ func (s *Service) getCapitalDiff(ctx context.Context, u *users.User, month strin
 	if err != nil {
 		return nil, err
 	}
-	diff := subtractAmounts(currentCapital.Amounts, prevCapital.Amounts)
-	return diff, nil
+	return currentCapital.Diff(prevCapital), nil
 }
 
 // getTransactionSummary calculates the sum of transactions recorded during given month.
@@ -91,16 +90,4 @@ func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, mont
 		spent.AddTransaction(tx)
 	}
 	return spent, nil
-}
-
-// subtractAmounts subtracts multi-currency amounts.
-func subtractAmounts(minuend, subtrahend map[string]float64) map[string]float64 {
-	rest := make(map[string]float64)
-	for currency, amount := range minuend {
-		rest[currency] = amount
-	}
-	for currency, amount := range subtrahend {
-		rest[currency] -= amount
-	}
-	return rest
 }

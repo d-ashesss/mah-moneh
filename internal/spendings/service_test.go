@@ -2,6 +2,7 @@ package spendings_test
 
 import (
 	"context"
+	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/capital"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	mocks "github.com/d-ashesss/mah-moneh/internal/mocks/spendings"
@@ -30,12 +31,12 @@ func (ts *CapitalServiceTestSuite) SetupTest() {
 func (ts *CapitalServiceTestSuite) TestGetMonthSpendings() {
 	ctx := context.Background()
 	u := &users.User{}
-	prevCap := &capital.Capital{Amounts: map[string]float64{
+	prevCap := &capital.Capital{Amounts: accounts.CurrencyAmounts{
 		"usd": 13,
 		"eur": 20,
 		"eth": 4,
 	}}
-	currentCap := &capital.Capital{Amounts: map[string]float64{
+	currentCap := &capital.Capital{Amounts: accounts.CurrencyAmounts{
 		"usd": 10,
 		"eur": 12,
 		"btc": 2,

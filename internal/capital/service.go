@@ -8,7 +8,7 @@ import (
 
 type AccountsService interface {
 	GetUserAccounts(ctx context.Context, u *users.User) (accounts.AccountCollection, error)
-	GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.AmountCollection, error)
+	GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.CurrencyAmounts, error)
 }
 
 // Service is a service responsible for calculating the capital.
@@ -33,9 +33,7 @@ func (s *Service) GetCapital(ctx context.Context, u *users.User, month string) (
 		if err != nil {
 			return nil, err
 		}
-		for currency, a := range amounts {
-			c.Amounts[currency] += a.Amount
-		}
+		c.Amounts = amounts
 	}
 	return c, nil
 }

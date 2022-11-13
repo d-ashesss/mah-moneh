@@ -18,15 +18,15 @@ type AccountsService struct {
 }
 
 // GetAccountAmounts provides a mock function with given fields: ctx, acc, month
-func (_m *AccountsService) GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.AmountCollection, error) {
+func (_m *AccountsService) GetAccountAmounts(ctx context.Context, acc *accounts.Account, month string) (accounts.CurrencyAmounts, error) {
 	ret := _m.Called(ctx, acc, month)
 
-	var r0 accounts.AmountCollection
-	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string) accounts.AmountCollection); ok {
+	var r0 accounts.CurrencyAmounts
+	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string) accounts.CurrencyAmounts); ok {
 		r0 = rf(ctx, acc, month)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(accounts.AmountCollection)
+			r0 = ret.Get(0).(accounts.CurrencyAmounts)
 		}
 	}
 

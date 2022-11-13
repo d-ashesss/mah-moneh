@@ -31,12 +31,33 @@ type Amount struct {
 }
 
 // AmountCollection represents a collection of account's amounts.
-type AmountCollection map[string]*Amount
+type AmountCollection []*Amount
 
-func NewAmountCollection(amounts []*Amount) AmountCollection {
-	c := make(AmountCollection)
-	for _, a := range amounts {
-		c[a.CurrencyCode] = a
+// GetCurrencyAmounts extracts amounts for each currency in the collection.
+func (a AmountCollection) GetCurrencyAmounts() CurrencyAmounts {
+	c := NewCurrencyAmounts()
+	for _, amt := range a {
+		c[amt.CurrencyCode] += amt.Amount
 	}
 	return c
+}
+
+// CurrencyAmounts contains amount per currency.
+type CurrencyAmounts map[string]float64
+
+// NewCurrencyAmounts creates new currency amounts instance.
+func NewCurrencyAmounts() CurrencyAmounts {
+	return make(CurrencyAmounts)
+}
+
+// Diff gets the difference from provided amounts.
+func (a CurrencyAmounts) Diff(from CurrencyAmounts) CurrencyAmounts {
+	diff := NewCurrencyAmounts()
+	for currency, amount := range a {
+		diff[currency] = amount
+	}
+	for currency, amount := range from {
+		diff[currency] -= amount
+	}
+	return diff
 }

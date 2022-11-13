@@ -26,9 +26,9 @@ func (ts *CapitalServiceTestSuite) TestGetCapital() {
 	u := &users.User{}
 	acc := &accounts.Account{}
 	accs := accounts.AccountCollection{acc}
-	amounts := accounts.AmountCollection{
-		"usd": &accounts.Amount{CurrencyCode: "usd", Amount: 10},
-		"eur": &accounts.Amount{CurrencyCode: "eur", Amount: 12},
+	amounts := accounts.CurrencyAmounts{
+		"usd": 10,
+		"eur": 12,
 	}
 	ts.accounts.On("GetUserAccounts", ctx, u).Return(accs, nil)
 	ts.accounts.On("GetAccountAmounts", ctx, acc, "2010-10").Return(amounts, nil)

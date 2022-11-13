@@ -44,11 +44,15 @@ func (s *Service) SetAccountCurrentAmount(ctx context.Context, acc *Account, cur
 	return s.db.SetAccountAmount(ctx, acc, month, currency, amount)
 }
 
-func (s *Service) GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error) {
-	return s.db.GetAccountAmounts(ctx, acc, month)
+func (s *Service) GetAccountAmounts(ctx context.Context, acc *Account, month string) (CurrencyAmounts, error) {
+	amounts, err := s.db.GetAccountAmounts(ctx, acc, month)
+	if err != nil {
+		return nil, err
+	}
+	return amounts.GetCurrencyAmounts(), nil
 }
 
-func (s *Service) GetAccountCurrentAmounts(ctx context.Context, acc *Account) (AmountCollection, error) {
+func (s *Service) GetAccountCurrentAmounts(ctx context.Context, acc *Account) (CurrencyAmounts, error) {
 	month := time.Now().Format(FmtYearMonth)
 	return s.GetAccountAmounts(ctx, acc, month)
 }

@@ -1,6 +1,7 @@
 package converter_test
 
 import (
+	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/converter"
 	mocks "github.com/d-ashesss/mah-moneh/internal/mocks/converter"
 	"github.com/stretchr/testify/mock"
@@ -29,7 +30,7 @@ func (ts *ConverterServiceTestSuite) SetupTest() {
 }
 
 func (ts *ConverterServiceTestSuite) TestGetTotal() {
-	amounts := map[string]float64{
+	amounts := accounts.CurrencyAmounts{
 		"usd": 100,
 		"eur": 100,
 		"btc": 5,
