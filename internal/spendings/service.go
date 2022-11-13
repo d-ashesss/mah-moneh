@@ -35,7 +35,30 @@ func NewService(capSrv CapitalService, transSrv TransactionsService, catSrv Cate
 }
 
 // GetMonthSpendings calculates funds spent during specified month.
-func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month string) (*Spending, error) {
+func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month string) (Spendings, error) {
+	spent, err := s.getTransactionSummary(ctx, u, month)
+	if err != nil {
+		return nil, err
+	}
+	actualDiff, err := s.getCapitalDiff(ctx, u, month)
+	if err != nil {
+		return nil, err
+	}
+	spent[Unaccounted] = subtractAmounts(actualDiff, spent[Total])
+	return spent, nil
+}
+
+// getPrevMonth calculates YYYY-MM representation of month previous to the provided.
+func getPrevMonth(month string) (string, error) {
+	d, err := time.Parse(accounts.FmtYearMonth, month)
+	if err != nil {
+		return "", err
+	}
+	return d.AddDate(0, -1, 0).Format(accounts.FmtYearMonth), nil
+}
+
+// getCapitalDiff calculates the difference between specified month and previous month capitals.
+func (s *Service) getCapitalDiff(ctx context.Context, u *users.User, month string) (map[string]float64, error) {
 	currentCapital, err := s.capital.GetCapital(ctx, u, month)
 	if err != nil {
 		return nil, err
@@ -48,60 +71,29 @@ func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month st
 	if err != nil {
 		return nil, err
 	}
-	categorized, uncategorized, err := s.getTransactionSummary(ctx, u, month)
-	if err != nil {
-		return nil, err
-	}
-	totalSpent := subtractAmounts(currentCapital.Amounts, prevCapital.Amounts)
-	unaccounted := subtractAmounts(totalSpent, uncategorized)
-	for _, spent := range categorized {
-		unaccounted = subtractAmounts(unaccounted, spent)
-	}
-	sp := &Spending{
-		ByCategory:    categorized,
-		Uncategorized: uncategorized,
-		Unaccounted:   unaccounted,
-	}
-	return sp, nil
-}
-
-// getPrevMonth calculates YYYY-MM representation of month previous to the provided.
-func getPrevMonth(month string) (string, error) {
-	d, err := time.Parse(accounts.FmtYearMonth, month)
-	if err != nil {
-		return "", err
-	}
-	return d.AddDate(0, -1, 0).Format(accounts.FmtYearMonth), nil
+	diff := subtractAmounts(currentCapital.Amounts, prevCapital.Amounts)
+	return diff, nil
 }
 
 // getTransactionSummary calculates the sum of transactions recorded during given month.
-func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, month string) (map[*categories.Category]map[string]float64, map[string]float64, error) {
-	sumByCat := make(map[*categories.Category]map[string]float64)
-	sum := make(map[string]float64)
-	txs, err := s.transactions.GetUserTransactions(ctx, u, month)
-	if err != nil {
-		return nil, nil, err
-	}
+func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, month string) (spendings, error) {
 	cats, err := s.categories.GetUserCategories(ctx, u)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	for _, cat := range cats {
-		if _, ok := sumByCat[cat]; !ok {
-			sumByCat[cat] = make(map[string]float64)
-		}
+	spent := newSpendings(cats)
+
+	txs, err := s.transactions.GetUserTransactions(ctx, u, month)
+	if err != nil {
+		return nil, err
 	}
 	for _, tx := range txs {
-		if _, found := sumByCat[tx.Category]; found {
-			sumByCat[tx.Category][tx.Currency] += tx.Amount
-			continue
-		}
-		sum[tx.Currency] += tx.Amount
+		spent.AddTransaction(tx)
 	}
-	return sumByCat, sum, nil
+	return spent, nil
 }
 
-// subtractAmounts subtracts multi-currency amounts
+// subtractAmounts subtracts multi-currency amounts.
 func subtractAmounts(minuend, subtrahend map[string]float64) map[string]float64 {
 	rest := make(map[string]float64)
 	for currency, amount := range minuend {
