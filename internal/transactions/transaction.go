@@ -15,7 +15,7 @@ type Transaction struct {
 	Amount       float64
 	Description  string
 	CategoryUUID *uuid.UUID           `gorm:"index"`
-	Category     *categories.Category `gorm:"foreignKey:CategoryUUID"`
+	Category     *categories.Category `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 }
 
 func NewTransaction(u *users.User, month string, currency string, amt float64, desc string, cat *categories.Category) *Transaction {
