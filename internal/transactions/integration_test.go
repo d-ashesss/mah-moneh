@@ -1,3 +1,5 @@
+//go:build integration
+
 package transactions_test
 
 import (
@@ -38,17 +40,14 @@ func (ts *TransactionsIntegrationTestSuite) SetupSuite() {
 	if err != nil {
 		ts.T().Fatalf("Failed to connect to the DB: %s", err)
 	}
-	ts.db = db
-	store := transactions.NewGormStore(db)
+	ts.db = db.Session(&gorm.Session{NewDB: true})
+	store := transactions.NewGormStore(db.Session(&gorm.Session{NewDB: true}))
 	ts.srv = transactions.NewService(store)
-}
 
-func (ts *TransactionsIntegrationTestSuite) SetupTest() {
-	var err error
-	err = ts.db.Migrator().DropTable(&transactions.Transaction{}, &categories.Category{})
-	ts.Require().NoError(err, "Failed to drop required tables.")
-	err = ts.db.Migrator().CreateTable(&categories.Category{}, &transactions.Transaction{})
-	ts.Require().NoError(err, "Failed to migrade required tables.")
+	err = db.Session(&gorm.Session{Logger: logger.Default}).Debug().Migrator().AutoMigrate(&transactions.Transaction{})
+	if err != nil {
+		ts.T().Fatalf("Failed to migrate required tables: %s", err)
+	}
 }
 
 func (ts *TransactionsIntegrationTestSuite) TestCreateTransaction() {

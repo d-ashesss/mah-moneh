@@ -1,3 +1,5 @@
+//go:build integration
+
 package categories_test
 
 import (
@@ -37,17 +39,14 @@ func (ts *CategoriesIntegrationTestSuite) SetupSuite() {
 	if err != nil {
 		ts.T().Fatalf("Failed to connect to the DB: %s", err)
 	}
-	ts.db = db
-	store := categories.NewGormStore(db)
+	ts.db = db.Session(&gorm.Session{NewDB: true})
+	store := categories.NewGormStore(db.Session(&gorm.Session{NewDB: true}))
 	ts.srv = categories.NewService(store)
-}
 
-func (ts *CategoriesIntegrationTestSuite) SetupTest() {
-	var err error
-	err = ts.db.Migrator().DropTable(&categories.Category{})
-	ts.Require().NoError(err, "Failed to drop required tables.")
-	err = ts.db.Migrator().CreateTable(&categories.Category{})
-	ts.Require().NoError(err, "Failed to migrade required tables.")
+	err = db.Migrator().AutoMigrate(&categories.Category{})
+	if err != nil {
+		ts.T().Fatalf("Failed to migrate required tables: %s", err)
+	}
 }
 
 func (ts *CategoriesIntegrationTestSuite) TestSaveCategory() {
