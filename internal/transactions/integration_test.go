@@ -44,7 +44,7 @@ func (ts *TransactionsIntegrationTestSuite) SetupSuite() {
 	store := transactions.NewGormStore(db.Session(&gorm.Session{NewDB: true}))
 	ts.srv = transactions.NewService(store)
 
-	err = db.Session(&gorm.Session{Logger: logger.Default}).Debug().Migrator().AutoMigrate(&transactions.Transaction{})
+	err = db.Migrator().AutoMigrate(&transactions.Transaction{})
 	if err != nil {
 		ts.T().Fatalf("Failed to migrate required tables: %s", err)
 	}
