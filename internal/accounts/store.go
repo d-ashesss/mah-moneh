@@ -97,6 +97,9 @@ func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account, month s
 	amounts := make(AmountCollection, 0)
 	for _, curr := range currencies {
 		amount, err := s.GetAccountAmount(ctx, acc, month, curr)
+		if err == gorm.ErrRecordNotFound {
+			continue
+		}
 		if err != nil {
 			return nil, err
 		}

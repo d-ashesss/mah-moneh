@@ -186,7 +186,7 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountAmounts() {
 	err = ts.db.Save(amount).Error
 	ts.Require().NoError(err, "Failed to set amount on the account.")
 
-	amount = &accounts.Amount{Account: acc, YearMonth: "2010-06", CurrencyCode: "eur", Amount: 35.0}
+	amount = &accounts.Amount{Account: acc, YearMonth: "2010-05", CurrencyCode: "eur", Amount: 35.0}
 	err = ts.db.Save(amount).Error
 	ts.Require().NoError(err, "Failed to set amount on the account.")
 
@@ -206,6 +206,12 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountAmounts() {
 	ts.Require().NoError(err, "Failed to get amounts on the account.")
 	ts.Require().Len(amounts, 2, "Invalid set of amounts returned.")
 	ts.InDelta(20.0, amounts["usd"], 0.001, "Invalid amount on account.")
+	ts.InDelta(35.0, amounts["eur"], 0.001, "Invalid amount on account.")
+
+	amounts, err = ts.srv.GetAccountAmounts(context.Background(), acc, "2010-05")
+	ts.Require().NoError(err, "Failed to get amounts on the account.")
+	ts.Require().Len(amounts, 1, "Invalid set of amounts returned.")
+	ts.InDelta(0.0, amounts["usd"], 0.001, "Invalid amount on account.")
 	ts.InDelta(35.0, amounts["eur"], 0.001, "Invalid amount on account.")
 }
 
