@@ -31,6 +31,10 @@ func (a *App) registerHttpHandlers() {
 	r.GET("/accounts/:uuid/amounts", a.handleAccountAmountGet)
 	r.GET("/accounts/:uuid/amounts/:month", a.handleAccountAmountGet)
 
+	r.POST("/categories", a.handleCategoriesCreate)
+	r.GET("/categories", a.handleCategoriesGet)
+	r.DELETE("/categories/:uuid", a.handleCategoriesDelete)
+
 	a.server.Handler = r
 }
 

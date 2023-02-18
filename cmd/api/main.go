@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/api"
+	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
 	"os"
 )
-
-var accountService *accounts.Service
 
 func main() {
 	log.SetFlags(0)
@@ -35,13 +34,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to the DB: %s", err)
 	}
-	store := accounts.NewGormStore(db)
-	accountService = accounts.NewService(store)
-	if err := db.AutoMigrate(&accounts.Account{}, &accounts.Amount{}); err != nil {
+
+	accountsStore := accounts.NewGormStore(db)
+	accountsService := accounts.NewService(accountsStore)
+	categoriesStore := categories.NewGormStore(db)
+	categoriesService := categories.NewService(categoriesStore)
+
+	if err := db.AutoMigrate(&accounts.Account{}, &accounts.Amount{}, &categories.Category{}); err != nil {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
-	apiService := api.NewService(accountService)
+	apiService := api.NewService(accountsService, categoriesService)
 
 	cfg := LoadConfig()
 	app := NewApp(cfg, apiService)

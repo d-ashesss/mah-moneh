@@ -3,6 +3,7 @@ package categories
 import (
 	"context"
 	"github.com/d-ashesss/mah-moneh/internal/users"
+	"github.com/gofrs/uuid"
 )
 
 type Service struct {
@@ -19,6 +20,10 @@ func (s *Service) CreateCategory(ctx context.Context, u *users.User, name string
 		return nil, err
 	}
 	return cat, nil
+}
+
+func (s *Service) GetCategory(ctx context.Context, UUID uuid.UUID) (*Category, error) {
+	return s.db.GetCategory(ctx, UUID)
 }
 
 func (s *Service) DeleteCategory(ctx context.Context, cat *Category) error {
