@@ -116,3 +116,75 @@ func (a *App) handleAccountsDelete(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
+
+type AccountAmountMonthInput struct {
+	Month string `uri:"month"`
+}
+
+type AccountAmountInput struct {
+	Currency string  `json:"currency" binding:"required"`
+	Amount   float64 `json:"amount" binding:"required"`
+}
+
+func (a *App) handleAccountAmountSet(c *gin.Context) {
+	acc, err := a.account(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, a.error(err))
+		return
+	}
+	var m AccountAmountMonthInput
+	if err := c.ShouldBindUri(&m); err != nil {
+		c.JSON(http.StatusBadRequest, a.error(err))
+		return
+	}
+	var input AccountAmountInput
+	if err := c.ShouldBind(&input); err != nil {
+		c.JSON(http.StatusBadRequest, a.error(err))
+		return
+	}
+	if m.Month == "" {
+		if err = a.api.SetAccountCurrentAmount(c, acc, input.Currency, input.Amount); err != nil {
+			log.Printf("Failed to set account amount: %s", err)
+			c.JSON(http.StatusInternalServerError, a.error(err))
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+	if err = a.api.SetAccountAmount(c, acc, m.Month, input.Currency, input.Amount); err != nil {
+		log.Printf("Failed to set account amount: %s", err)
+		c.JSON(http.StatusInternalServerError, a.error(err))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (a *App) handleAccountAmountGet(c *gin.Context) {
+	acc, err := a.account(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, a.error(err))
+		return
+	}
+	var m AccountAmountMonthInput
+	if err := c.ShouldBindUri(&m); err != nil {
+		c.JSON(http.StatusBadRequest, a.error(err))
+		return
+	}
+	if m.Month == "" {
+		amts, err := a.api.GetAccountCurrentAmount(c, acc)
+		if err != nil {
+			log.Printf("Failed to get account amount: %s", err)
+			c.JSON(http.StatusInternalServerError, a.error(err))
+			return
+		}
+		c.JSON(http.StatusOK, amts)
+		return
+	}
+	amts, err := a.api.GetAccountAmount(c, acc, m.Month)
+	if err != nil {
+		log.Printf("Failed to get account amount: %s", err)
+		c.JSON(http.StatusInternalServerError, a.error(err))
+		return
+	}
+	c.JSON(http.StatusOK, amts)
+}

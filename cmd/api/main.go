@@ -37,7 +37,7 @@ func main() {
 	}
 	store := accounts.NewGormStore(db)
 	accountService = accounts.NewService(store)
-	if err := db.AutoMigrate(&accounts.Account{}); err != nil {
+	if err := db.AutoMigrate(&accounts.Account{}, &accounts.Amount{}); err != nil {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
