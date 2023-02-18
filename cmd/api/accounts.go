@@ -123,7 +123,7 @@ type AccountAmountMonthInput struct {
 
 type AccountAmountInput struct {
 	Currency string  `json:"currency" binding:"required"`
-	Amount   float64 `json:"amount" binding:"required"`
+	Amount   float64 `json:"amount"`
 }
 
 func (a *App) handleAccountAmountSet(c *gin.Context) {
