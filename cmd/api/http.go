@@ -3,13 +3,20 @@ package main
 import (
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofrs/uuid"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
 func (a *App) registerHttpHandlers() {
 	r := gin.Default()
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		_ = v.RegisterValidation("yearmonth", validateYearMonth)
+	}
 
 	r.GET("/", a.handleIndex)
 
@@ -18,6 +25,11 @@ func (a *App) registerHttpHandlers() {
 	r.GET("/accounts", a.handleAccountsGet)
 	r.PUT("/accounts/:uuid", a.handleAccountsUpdate)
 	r.DELETE("/accounts/:uuid", a.handleAccountsDelete)
+
+	r.PUT("/accounts/:uuid/amounts", a.handleAccountAmountSet)
+	r.PUT("/accounts/:uuid/amounts/:month", a.handleAccountAmountSet)
+	r.GET("/accounts/:uuid/amounts", a.handleAccountAmountGet)
+	r.GET("/accounts/:uuid/amounts/:month", a.handleAccountAmountGet)
 
 	a.server.Handler = r
 }
@@ -56,4 +68,13 @@ func (a *App) user(c *gin.Context) *users.User {
 		return nil
 	}
 	return user.(*users.User)
+}
+
+func validateYearMonth(fl validator.FieldLevel) bool {
+	month, ok := fl.Field().Interface().(string)
+	if !ok {
+		return false
+	}
+	rx := regexp.MustCompile("^\\d{4}-\\d{2}$")
+	return month == "" || rx.MatchString(month)
 }

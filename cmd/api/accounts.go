@@ -118,7 +118,7 @@ func (a *App) handleAccountsDelete(c *gin.Context) {
 }
 
 type AccountAmountMonthInput struct {
-	Month string `uri:"month"`
+	Month string `uri:"month" binding:"yearmonth"`
 }
 
 type AccountAmountInput struct {
