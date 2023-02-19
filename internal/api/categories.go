@@ -8,17 +8,17 @@ import (
 )
 
 func (s *Service) CreateCategory(ctx context.Context, u *users.User, name string) (*categories.Category, error) {
-	return s.categoriesSrv.CreateCategory(ctx, u, name)
+	return s.categories.CreateCategory(ctx, u, name)
 }
 
 func (s *Service) GetCategory(ctx context.Context, UUID uuid.UUID) (*categories.Category, error) {
-	return s.categoriesSrv.GetCategory(ctx, UUID)
+	return s.categories.GetCategory(ctx, UUID)
 }
 
 func (s *Service) GetUserCategories(ctx context.Context, u *users.User) ([]*categories.Category, error) {
-	return s.categoriesSrv.GetUserCategories(ctx, u)
+	return s.categories.GetUserCategories(ctx, u)
 }
 
 func (s *Service) DeleteCategory(ctx context.Context, cat *categories.Category) error {
-	return s.categoriesSrv.DeleteCategory(ctx, cat)
+	return s.categories.DeleteCategory(ctx, cat)
 }

@@ -35,6 +35,10 @@ func (a *App) registerHttpHandlers() {
 	r.GET("/categories", a.handleCategoriesGet)
 	r.DELETE("/categories/:uuid", a.handleCategoriesDelete)
 
+	r.POST("/transactions", a.handleTransactionsCreate)
+	r.GET("/transactions/:month", a.handleTransactionsGet)
+	r.DELETE("/transactions/:uuid", a.handleTransactionsDelete)
+
 	a.server.Handler = r
 }
 
