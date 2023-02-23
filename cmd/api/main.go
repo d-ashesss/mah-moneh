@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/api"
+	"github.com/d-ashesss/mah-moneh/internal/capital"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
+	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -42,6 +44,8 @@ func main() {
 	categoriesService := categories.NewService(categoriesStore)
 	transactionsStore := transactions.NewGormStore(db)
 	transactionsService := transactions.NewService(transactionsStore)
+	capitalService := capital.NewService(accountsService)
+	spendingsService := spendings.NewService(capitalService, transactionsService, categoriesService)
 
 	if err := db.AutoMigrate(
 		&accounts.Account{},
@@ -52,7 +56,7 @@ func main() {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
-	apiService := api.NewService(accountsService, categoriesService, transactionsService)
+	apiService := api.NewService(accountsService, categoriesService, transactionsService, spendingsService)
 
 	cfg := LoadConfig()
 	app := NewApp(cfg, apiService)

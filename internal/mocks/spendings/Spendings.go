@@ -3,7 +3,9 @@
 package mocks
 
 import (
+	accounts "github.com/d-ashesss/mah-moneh/internal/accounts"
 	categories "github.com/d-ashesss/mah-moneh/internal/categories"
+
 	mock "github.com/stretchr/testify/mock"
 
 	transactions "github.com/d-ashesss/mah-moneh/internal/transactions"
@@ -33,6 +35,22 @@ func (_m *Spendings) GetAmount(cat *categories.Category, currency string) float6
 		r0 = rf(cat, currency)
 	} else {
 		r0 = ret.Get(0).(float64)
+	}
+
+	return r0
+}
+
+// GetAmounts provides a mock function with given fields: cat
+func (_m *Spendings) GetAmounts(cat *categories.Category) accounts.CurrencyAmounts {
+	ret := _m.Called(cat)
+
+	var r0 accounts.CurrencyAmounts
+	if rf, ok := ret.Get(0).(func(*categories.Category) accounts.CurrencyAmounts); ok {
+		r0 = rf(cat)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(accounts.CurrencyAmounts)
+		}
 	}
 
 	return r0

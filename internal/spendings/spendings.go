@@ -16,6 +16,7 @@ var (
 type Spendings interface {
 	AddAmount(cat *categories.Category, currency string, amount float64)
 	GetAmount(cat *categories.Category, currency string) float64
+	GetAmounts(cat *categories.Category) accounts.CurrencyAmounts
 	AddTransaction(tx *transactions.Transaction)
 }
 
@@ -50,6 +51,13 @@ func (s spendings) GetAmount(cat *categories.Category, currency string) float64 
 		return amounts[currency]
 	}
 	return 0
+}
+
+func (s spendings) GetAmounts(cat *categories.Category) accounts.CurrencyAmounts {
+	if amounts, found := s[cat]; found && amounts != nil {
+		return amounts
+	}
+	return accounts.NewCurrencyAmounts()
 }
 
 func (s spendings) AddTransaction(tx *transactions.Transaction) {
