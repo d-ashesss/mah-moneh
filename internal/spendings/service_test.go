@@ -5,15 +5,17 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/capital"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	mocks "github.com/d-ashesss/mah-moneh/internal/mocks/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/d-ashesss/mah-moneh/internal/users"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-type CapitalServiceTestSuite struct {
+type SpendingsServiceTestSuite struct {
 	suite.Suite
 	capital      *mocks.CapitalService
 	transactions *mocks.TransactionsService
@@ -21,14 +23,22 @@ type CapitalServiceTestSuite struct {
 	srv          *spendings.Service
 }
 
-func (ts *CapitalServiceTestSuite) SetupTest() {
+func (ts *SpendingsServiceTestSuite) SetupTest() {
 	ts.capital = mocks.NewCapitalService(ts.T())
 	ts.transactions = mocks.NewTransactionsService(ts.T())
 	ts.categories = mocks.NewCategoryService(ts.T())
 	ts.srv = spendings.NewService(ts.capital, ts.transactions, ts.categories)
 }
 
-func (ts *CapitalServiceTestSuite) TestGetMonthSpendings() {
+func newCategory(UUID string) *categories.Category {
+	return &categories.Category{
+		Model: datastore.Model{
+			UUID: uuid.FromStringOrNil(UUID),
+		},
+	}
+}
+
+func (ts *SpendingsServiceTestSuite) TestGetMonthSpendings() {
 	ctx := context.Background()
 	u := &users.User{}
 	prevCap := &capital.Capital{Amounts: accounts.CurrencyAmounts{
@@ -43,17 +53,20 @@ func (ts *CapitalServiceTestSuite) TestGetMonthSpendings() {
 	}}
 	ts.capital.On("GetCapital", ctx, u, "2009-12").Return(prevCap, nil)
 	ts.capital.On("GetCapital", ctx, u, "2010-01").Return(currentCap, nil)
-	catIncome := &categories.Category{}
-	catEmpty := &categories.Category{}
-	catSomething := &categories.Category{}
-	ts.categories.On("GetUserCategories", ctx, u).Return([]*categories.Category{catIncome, catEmpty, catSomething}, nil)
+	catIncomeUUID := "7070e309-af27-445a-9b15-3f9db12a5377"
+	catIncome := newCategory(catIncomeUUID)
+	catEmptyUUID := "01fbfdc3-c399-4cdf-bbf8-37b3422e6466"
+	catEmpty := newCategory(catEmptyUUID)
+	catSomethingUUID := "8d4357a0-d20b-410b-a520-cf7d575c402f"
+	catSomething := newCategory(catSomethingUUID)
+	ts.categories.On("GetUserCategories", ctx, u).Return([]*categories.Category{newCategory(catIncomeUUID), newCategory(catEmptyUUID), newCategory(catSomethingUUID)}, nil)
 	txs := transactions.TransactionCollection{
 		&transactions.Transaction{Amount: -8, Currency: "usd"},
-		&transactions.Transaction{Amount: 5, Currency: "usd", Category: catIncome},
+		&transactions.Transaction{Amount: 5, Currency: "usd", Category: newCategory(catIncomeUUID)},
 		&transactions.Transaction{Amount: -3, Currency: "eur"},
-		&transactions.Transaction{Amount: -2, Currency: "eur", Category: catSomething},
+		&transactions.Transaction{Amount: -2, Currency: "eur", Category: newCategory(catSomethingUUID)},
 		&transactions.Transaction{Amount: -4, Currency: "eth"},
-		&transactions.Transaction{Amount: 2, Currency: "btc", Category: catIncome},
+		&transactions.Transaction{Amount: 2, Currency: "btc", Category: newCategory(catIncomeUUID)},
 	}
 	ts.transactions.On("GetUserTransactions", ctx, u, "2010-01").Return(txs, nil)
 	spending, err := ts.srv.GetMonthSpendings(ctx, u, "2010-01")
@@ -85,6 +98,6 @@ func (ts *CapitalServiceTestSuite) TestGetMonthSpendings() {
 	ts.InDelta(0.0, spending.GetAmount(spendings.Unaccounted, "btc"), 0.001)
 }
 
-func TestCapitalService(t *testing.T) {
-	suite.Run(t, new(CapitalServiceTestSuite))
+func TestSpendingsService(t *testing.T) {
+	suite.Run(t, new(SpendingsServiceTestSuite))
 }
