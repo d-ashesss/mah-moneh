@@ -76,7 +76,7 @@ func (a *App) handleAccountsGet(c *gin.Context) {
 	accs, err := a.api.GetUserAccounts(c, a.user(c))
 	if err != nil {
 		log.Printf("Failed to get user accounts: %s", err)
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusInternalServerError, a.error(nil))
 		return
 	}
 

@@ -84,7 +84,7 @@ func (a *App) handleCategoriesDelete(c *gin.Context) {
 		return
 	}
 	if err := a.api.DeleteCategory(c, cat); err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, a.error(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{})
