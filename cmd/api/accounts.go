@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
+	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"log"
@@ -29,7 +30,7 @@ func (a *App) account(c *gin.Context) (*accounts.Account, error) {
 	}
 	u := a.user(c)
 	if acc.User.UUID != u.UUID {
-		return nil, errors.New(http.StatusText(http.StatusForbidden))
+		return nil, api.ErrResourceNotFound
 	}
 	return acc, nil
 }
@@ -85,6 +86,10 @@ func (a *App) handleAccountsGet(c *gin.Context) {
 
 func (a *App) handleAccountsUpdate(c *gin.Context) {
 	acc, err := a.account(c)
+	if errors.Is(err, api.ErrResourceNotFound) {
+		c.JSON(http.StatusNotFound, a.error("Account not found"))
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, a.error(err))
 		return
@@ -105,6 +110,10 @@ func (a *App) handleAccountsUpdate(c *gin.Context) {
 
 func (a *App) handleAccountsDelete(c *gin.Context) {
 	acc, err := a.account(c)
+	if errors.Is(err, api.ErrResourceNotFound) {
+		c.JSON(http.StatusNotFound, a.error("Account not found"))
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, a.error(err))
 		return
@@ -128,6 +137,10 @@ type AccountAmountInput struct {
 
 func (a *App) handleAccountAmountSet(c *gin.Context) {
 	acc, err := a.account(c)
+	if errors.Is(err, api.ErrResourceNotFound) {
+		c.JSON(http.StatusNotFound, a.error("Account not found"))
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, a.error(err))
 		return
@@ -161,6 +174,10 @@ func (a *App) handleAccountAmountSet(c *gin.Context) {
 
 func (a *App) handleAccountAmountGet(c *gin.Context) {
 	acc, err := a.account(c)
+	if errors.Is(err, api.ErrResourceNotFound) {
+		c.JSON(http.StatusNotFound, a.error("Account not found"))
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, a.error(err))
 		return

@@ -2,6 +2,7 @@ package currencies
 
 import (
 	"errors"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"gorm.io/gorm"
 )
 
@@ -46,6 +47,9 @@ func (g *gormStore) GetRate(base, target, month string) (*Rate, error) {
 		err = query.Where("year_month > ?", month).
 			Order("year_month ASC").
 			First(r).Error
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrRecordNotFound
 	}
 	if err != nil {
 		return nil, err

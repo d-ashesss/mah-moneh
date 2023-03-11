@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ func (a *App) transaction(c *gin.Context) (*transactions.Transaction, error) {
 		return nil, err
 	}
 	if tx.User.UUID != a.user(c).UUID {
-		return nil, errors.New(http.StatusText(http.StatusForbidden))
+		return nil, api.ErrResourceNotFound
 	}
 	return tx, nil
 }
@@ -111,6 +112,10 @@ func (a *App) handleTransactionsGet(c *gin.Context) {
 
 func (a *App) handleTransactionsDelete(c *gin.Context) {
 	tx, err := a.transaction(c)
+	if errors.Is(err, api.ErrResourceNotFound) {
+		c.JSON(http.StatusNotFound, a.error("Transaction not found"))
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, a.error(err))
 		return

@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -27,7 +28,7 @@ func (a *App) category(c *gin.Context) (*categories.Category, error) {
 		return nil, err
 	}
 	if cat.User.UUID != a.user(c).UUID {
-		return nil, errors.New(http.StatusText(http.StatusForbidden))
+		return nil, api.ErrResourceNotFound
 	}
 	return cat, err
 }
@@ -79,6 +80,10 @@ func (a *App) handleCategoriesGet(c *gin.Context) {
 
 func (a *App) handleCategoriesDelete(c *gin.Context) {
 	cat, err := a.category(c)
+	if errors.Is(err, api.ErrResourceNotFound) {
+		c.JSON(http.StatusNotFound, a.error("Category not found"))
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, a.error(err))
 		return

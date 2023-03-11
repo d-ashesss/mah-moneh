@@ -3,8 +3,13 @@ package api
 import (
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
+)
+
+var (
+	ErrResourceNotFound = datastore.ErrRecordNotFound
 )
 
 type Service struct {

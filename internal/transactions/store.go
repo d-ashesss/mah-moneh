@@ -2,6 +2,8 @@ package transactions
 
 import (
 	"context"
+	"errors"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
@@ -32,7 +34,11 @@ func (s *gormStore) DeleteTransaction(ctx context.Context, tx *Transaction) erro
 
 func (s *gormStore) GetTransaction(ctx context.Context, uuid uuid.UUID) (*Transaction, error) {
 	tx := &Transaction{}
-	if err := s.db.WithContext(ctx).Preload("Category").First(tx, "uuid = ?", uuid).Error; err != nil {
+	err := s.db.WithContext(ctx).Preload("Category").First(tx, "uuid = ?", uuid).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrRecordNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 	return tx, nil

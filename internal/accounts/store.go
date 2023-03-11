@@ -2,6 +2,8 @@ package accounts
 
 import (
 	"context"
+	"errors"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
@@ -50,7 +52,11 @@ func (s *gormStore) DeleteAccount(ctx context.Context, acc *Account) error {
 
 func (s *gormStore) GetAccount(ctx context.Context, UUID uuid.UUID) (*Account, error) {
 	acc := &Account{}
-	if err := s.db.WithContext(ctx).Where("uuid = ?", UUID).First(acc).Error; err != nil {
+	err := s.db.WithContext(ctx).Where("uuid = ?", UUID).First(acc).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrRecordNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 	return acc, nil

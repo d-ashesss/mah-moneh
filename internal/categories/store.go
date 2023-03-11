@@ -2,6 +2,8 @@ package categories
 
 import (
 	"context"
+	"errors"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
@@ -32,7 +34,11 @@ func (s *gormStore) DeleteCategory(ctx context.Context, cat *Category) error {
 
 func (s *gormStore) GetCategory(ctx context.Context, UUID uuid.UUID) (*Category, error) {
 	var cat Category
-	if err := s.db.WithContext(ctx).Where("uuid = ?", UUID).First(&cat).Error; err != nil {
+	err := s.db.WithContext(ctx).Where("uuid = ?", UUID).First(&cat).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrRecordNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 	return &cat, nil
