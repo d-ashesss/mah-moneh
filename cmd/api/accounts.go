@@ -2,11 +2,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
-	"log"
 	"net/http"
 	"time"
 )
@@ -65,9 +65,7 @@ func (a *App) handleAccountsCreate(c *gin.Context) {
 	}
 	acc, err := a.api.CreateAccount(c, a.user(c), input.Name)
 	if err != nil {
-		log.Printf("Failed to create account: %s", err)
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to create account: %w", err))
 	}
 
 	c.JSON(http.StatusCreated, NewAccountResponse(acc))
@@ -76,9 +74,7 @@ func (a *App) handleAccountsCreate(c *gin.Context) {
 func (a *App) handleAccountsGet(c *gin.Context) {
 	accs, err := a.api.GetUserAccounts(c, a.user(c))
 	if err != nil {
-		log.Printf("Failed to get user accounts: %s", err)
-		c.JSON(http.StatusInternalServerError, a.error(nil))
-		return
+		panic(fmt.Errorf("failed to get user accounts: %w", err))
 	}
 
 	c.JSON(http.StatusOK, MapAccountsResponse(accs))
@@ -101,9 +97,7 @@ func (a *App) handleAccountsUpdate(c *gin.Context) {
 	}
 	acc.Name = input.Name
 	if err := a.api.UpdateAccount(c, acc); err != nil {
-		log.Printf("Failed to update account: %s", err)
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to update account: %w", err))
 	}
 	c.JSON(http.StatusOK, NewAccountResponse(acc))
 }
@@ -119,9 +113,7 @@ func (a *App) handleAccountsDelete(c *gin.Context) {
 		return
 	}
 	if err := a.api.DeleteAccount(c, acc); err != nil {
-		log.Printf("Failed to delete account: %s", err)
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to delete account: %w", err))
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -157,17 +149,13 @@ func (a *App) handleAccountAmountSet(c *gin.Context) {
 	}
 	if m.Month == "" {
 		if err = a.api.SetAccountCurrentAmount(c, acc, input.Currency, input.Amount); err != nil {
-			log.Printf("Failed to set account amount: %s", err)
-			c.JSON(http.StatusInternalServerError, a.error(err))
-			return
+			panic(fmt.Errorf("failed to set account amount: %w", err))
 		}
 		c.JSON(http.StatusOK, gin.H{})
 		return
 	}
 	if err = a.api.SetAccountAmount(c, acc, m.Month, input.Currency, input.Amount); err != nil {
-		log.Printf("Failed to set account amount: %s", err)
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to set account amount: %w", err))
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -190,18 +178,14 @@ func (a *App) handleAccountAmountGet(c *gin.Context) {
 	if m.Month == "" {
 		amts, err := a.api.GetAccountCurrentAmount(c, acc)
 		if err != nil {
-			log.Printf("Failed to get account amount: %s", err)
-			c.JSON(http.StatusInternalServerError, a.error(err))
-			return
+			panic(fmt.Errorf("failed to get account amount: %w", err))
 		}
 		c.JSON(http.StatusOK, amts)
 		return
 	}
 	amts, err := a.api.GetAccountAmount(c, acc, m.Month)
 	if err != nil {
-		log.Printf("Failed to get account amount: %s", err)
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to get account amount: %w", err))
 	}
 	c.JSON(http.StatusOK, amts)
 }

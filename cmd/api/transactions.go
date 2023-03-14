@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
@@ -90,8 +91,7 @@ func (a *App) handleTransactionsCreate(c *gin.Context) {
 	}
 	tx, err := a.api.CreateTransaction(c, a.user(c), input.Month, input.Currency, input.Amount, input.Description, cat)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
-		return
+		panic(fmt.Errorf("failed to create transaction: %w", err))
 	}
 	c.JSON(http.StatusCreated, NewTransactionResponse(tx))
 }
@@ -104,8 +104,7 @@ func (a *App) handleTransactionsGet(c *gin.Context) {
 	}
 	txs, err := a.api.GetUserTransactions(c, a.user(c), input.Month)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
-		return
+		panic(fmt.Errorf("failed to get user transactions: %w", err))
 	}
 	c.JSON(http.StatusOK, MapTransactionsResponse(txs))
 }
@@ -121,8 +120,7 @@ func (a *App) handleTransactionsDelete(c *gin.Context) {
 		return
 	}
 	if err := a.api.DeleteTransaction(c, tx); err != nil {
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to delete transaction: %w", err))
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }

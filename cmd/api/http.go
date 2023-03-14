@@ -6,13 +6,15 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofrs/uuid"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
 func (a *App) registerHttpHandlers() {
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Logger(), gin.CustomRecoveryWithWriter(nil, a.handleRecovery))
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		_ = v.RegisterValidation("yearmonth", validateYearMonth)
@@ -52,13 +54,17 @@ func (a *App) authenticate(c *gin.Context) {
 	auth := c.GetHeader("Authorization")
 	uid, _ := strings.CutPrefix(auth, "Bearer ")
 	if uid == "" {
-		c.JSON(http.StatusUnauthorized, a.error(http.StatusText(http.StatusUnauthorized)))
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusUnauthorized, a.error(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
 	user := &users.User{UUID: uuid.FromStringOrNil(uid)}
 	c.Set("user", user)
 	c.Next()
+}
+
+func (a *App) handleRecovery(c *gin.Context, err any) {
+	c.JSON(http.StatusInternalServerError, a.error(nil))
+	log.Printf("[APP] Panic recovered: %v", err)
 }
 
 func (a *App) error(err any) gin.H {

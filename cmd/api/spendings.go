@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -17,8 +18,7 @@ func (a *App) handleSpendingsGet(c *gin.Context) {
 	}
 	spent, err := a.api.GetUserMonthSpendings(c, a.user(c), input.Month)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to get user month spendings: %w", err))
 	}
 	c.JSON(http.StatusOK, spent)
 }

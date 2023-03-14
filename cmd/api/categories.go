@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/gin-gonic/gin"
@@ -63,8 +64,7 @@ func (a *App) handleCategoriesCreate(c *gin.Context) {
 	}
 	cat, err := a.api.CreateCategory(c, a.user(c), input.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to create category: %w", err))
 	}
 	c.JSON(http.StatusCreated, NewCategoryResponse(cat))
 }
@@ -72,8 +72,7 @@ func (a *App) handleCategoriesCreate(c *gin.Context) {
 func (a *App) handleCategoriesGet(c *gin.Context) {
 	cats, err := a.api.GetUserCategories(c, a.user(c))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to get user categories: %w", err))
 	}
 	c.JSON(http.StatusOK, MapCategoriesResponse(cats))
 }
@@ -89,8 +88,7 @@ func (a *App) handleCategoriesDelete(c *gin.Context) {
 		return
 	}
 	if err := a.api.DeleteCategory(c, cat); err != nil {
-		c.JSON(http.StatusInternalServerError, a.error(err))
-		return
+		panic(fmt.Errorf("failed to delete category: %w", err))
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
