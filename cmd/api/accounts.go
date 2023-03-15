@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/api"
@@ -22,7 +21,7 @@ type GetAccountInput struct {
 func (a *App) account(c *gin.Context) (*accounts.Account, error) {
 	var input GetAccountInput
 	if err := c.ShouldBindUri(&input); err != nil {
-		return nil, err
+		return nil, badRequest(err)
 	}
 	acc, err := a.api.GetAccount(c, uuid.FromStringOrNil(input.UUID))
 	if err != nil {
@@ -60,12 +59,13 @@ func MapAccountsResponse(accs []*accounts.Account) []*AccountResponse {
 func (a *App) handleAccountsCreate(c *gin.Context) {
 	var input CreateAccountInput
 	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, badRequest(err))
 		return
 	}
 	acc, err := a.api.CreateAccount(c, a.user(c), input.Name)
 	if err != nil {
-		panic(fmt.Errorf("failed to create account: %w", err))
+		a.respondError(c, fmt.Errorf("failed to create account: %w", err))
+		return
 	}
 
 	c.JSON(http.StatusCreated, NewAccountResponse(acc))
@@ -74,7 +74,8 @@ func (a *App) handleAccountsCreate(c *gin.Context) {
 func (a *App) handleAccountsGet(c *gin.Context) {
 	accs, err := a.api.GetUserAccounts(c, a.user(c))
 	if err != nil {
-		panic(fmt.Errorf("failed to get user accounts: %w", err))
+		a.respondError(c, fmt.Errorf("failed to get user accounts: %w", err))
+		return
 	}
 
 	c.JSON(http.StatusOK, MapAccountsResponse(accs))
@@ -82,38 +83,32 @@ func (a *App) handleAccountsGet(c *gin.Context) {
 
 func (a *App) handleAccountsUpdate(c *gin.Context) {
 	acc, err := a.account(c)
-	if errors.Is(err, api.ErrResourceNotFound) {
-		c.JSON(http.StatusNotFound, a.error("Account not found"))
-		return
-	}
 	if err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, fmt.Errorf("failed to find account: %w", err))
 		return
 	}
 	var input CreateAccountInput
 	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, badRequest(err))
 		return
 	}
 	acc.Name = input.Name
 	if err := a.api.UpdateAccount(c, acc); err != nil {
-		panic(fmt.Errorf("failed to update account: %w", err))
+		a.respondError(c, fmt.Errorf("failed to update account: %w", err))
+		return
 	}
 	c.JSON(http.StatusOK, NewAccountResponse(acc))
 }
 
 func (a *App) handleAccountsDelete(c *gin.Context) {
 	acc, err := a.account(c)
-	if errors.Is(err, api.ErrResourceNotFound) {
-		c.JSON(http.StatusNotFound, a.error("Account not found"))
-		return
-	}
 	if err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, fmt.Errorf("failed to find account: %w", err))
 		return
 	}
 	if err := a.api.DeleteAccount(c, acc); err != nil {
-		panic(fmt.Errorf("failed to delete account: %w", err))
+		a.respondError(c, fmt.Errorf("failed to delete account: %w", err))
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -129,63 +124,59 @@ type AccountAmountInput struct {
 
 func (a *App) handleAccountAmountSet(c *gin.Context) {
 	acc, err := a.account(c)
-	if errors.Is(err, api.ErrResourceNotFound) {
-		c.JSON(http.StatusNotFound, a.error("Account not found"))
-		return
-	}
 	if err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, fmt.Errorf("failed to find account: %w", err))
 		return
 	}
 	var m AccountAmountMonthInput
 	if err := c.ShouldBindUri(&m); err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, badRequest(err))
 		return
 	}
 	var input AccountAmountInput
 	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, badRequest(err))
 		return
 	}
 	if m.Month == "" {
 		if err = a.api.SetAccountCurrentAmount(c, acc, input.Currency, input.Amount); err != nil {
-			panic(fmt.Errorf("failed to set account amount: %w", err))
+			a.respondError(c, fmt.Errorf("failed to set account amount: %w", err))
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{})
 		return
 	}
 	if err = a.api.SetAccountAmount(c, acc, m.Month, input.Currency, input.Amount); err != nil {
-		panic(fmt.Errorf("failed to set account amount: %w", err))
+		a.respondError(c, fmt.Errorf("failed to set account amount: %w", err))
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 func (a *App) handleAccountAmountGet(c *gin.Context) {
 	acc, err := a.account(c)
-	if errors.Is(err, api.ErrResourceNotFound) {
-		c.JSON(http.StatusNotFound, a.error("Account not found"))
-		return
-	}
 	if err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, fmt.Errorf("failed to find account: %w", err))
 		return
 	}
 	var m AccountAmountMonthInput
 	if err := c.ShouldBindUri(&m); err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+		a.respondError(c, badRequest(err))
 		return
 	}
 	if m.Month == "" {
 		amts, err := a.api.GetAccountCurrentAmount(c, acc)
 		if err != nil {
-			panic(fmt.Errorf("failed to get account amount: %w", err))
+			a.respondError(c, fmt.Errorf("failed to get account amount: %w", err))
+			return
 		}
 		c.JSON(http.StatusOK, amts)
 		return
 	}
 	amts, err := a.api.GetAccountAmount(c, acc, m.Month)
 	if err != nil {
-		panic(fmt.Errorf("failed to get account amount: %w", err))
+		a.respondError(c, fmt.Errorf("failed to get account amount: %w", err))
+		return
 	}
 	c.JSON(http.StatusOK, amts)
 }

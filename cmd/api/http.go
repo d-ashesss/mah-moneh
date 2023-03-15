@@ -1,6 +1,9 @@
 package main
 
 import (
+	"errors"
+	"fmt"
+	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -11,6 +14,27 @@ import (
 	"regexp"
 	"strings"
 )
+
+type BadRequestError struct {
+	msg string
+	err error
+}
+
+func badRequest(errs ...error) BadRequestError {
+	err := BadRequestError{msg: "Invalid request input"}
+	if len(errs) > 0 {
+		err.err = errs[0]
+	}
+	return err
+}
+
+func (err BadRequestError) Error() string {
+	return err.msg
+}
+
+func (err BadRequestError) Unwrap() error {
+	return err.err
+}
 
 func (a *App) registerHttpHandlers() {
 	r := gin.New()
@@ -60,6 +84,26 @@ func (a *App) authenticate(c *gin.Context) {
 	user := &users.User{UUID: uuid.FromStringOrNil(uid)}
 	c.Set("user", user)
 	c.Next()
+}
+
+func (a *App) respondError(c *gin.Context, err error) {
+	if errors.Is(err, api.ErrResourceNotFound) {
+		c.JSON(http.StatusNotFound, a.error("Not found"))
+		return
+	}
+	var validationErr validator.ValidationErrors
+	if errors.As(err, &validationErr) {
+		c.JSON(http.StatusBadRequest, a.error(fmt.Sprintf("Invalid value of '%s'", validationErr[0].Field())))
+		return
+	}
+	var requestErr BadRequestError
+	if errors.As(err, &requestErr) {
+		c.JSON(http.StatusBadRequest, a.error(requestErr))
+		return
+	}
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (a *App) handleRecovery(c *gin.Context, err any) {
