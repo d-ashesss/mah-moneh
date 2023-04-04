@@ -4,16 +4,13 @@ package transactions_test
 
 import (
 	"context"
-	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"os"
 	"testing"
 )
 
@@ -24,22 +21,16 @@ type TransactionsIntegrationTestSuite struct {
 }
 
 func (ts *TransactionsIntegrationTestSuite) SetupSuite() {
-	dbHost := os.Getenv("POSTGRES_HOST")
-	dbPort := os.Getenv("POSTGRES_PORT")
-	dbUser := os.Getenv("POSTGRES_USER")
-	dbPwd := os.Getenv("POSTGRES_PASSWORD")
-	dbName := os.Getenv("POSTGRES_DB")
-	if dbHost == "" {
-		ts.T().Skip("No DB configuration provided.")
+	dbCfg, err := datastore.NewConfig()
+	if err != nil {
+		ts.T().Fatalf("Invalid database config: %s", err)
 	}
-	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s", dbHost, dbUser, dbPwd, dbName)
-	if dbPort != "" {
-		dsn = fmt.Sprintf("%s port=%s", dsn, dbPort)
-	}
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Discard})
+	dbCfg.TablePrefix = "tx_test_"
+	db, err := datastore.Open(dbCfg)
 	if err != nil {
 		ts.T().Fatalf("Failed to connect to the DB: %s", err)
 	}
+
 	ts.db = db.Session(&gorm.Session{NewDB: true})
 	store := transactions.NewGormStore(db.Session(&gorm.Session{NewDB: true}))
 	ts.srv = transactions.NewService(store)

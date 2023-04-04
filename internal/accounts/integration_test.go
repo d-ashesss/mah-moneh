@@ -4,16 +4,12 @@ package accounts_test
 
 import (
 	"context"
-	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"os"
 	"testing"
 	"time"
 )
@@ -25,30 +21,24 @@ type AccountsIntegrationTestSuite struct {
 }
 
 func (ts *AccountsIntegrationTestSuite) SetupSuite() {
-	dbHost := os.Getenv("POSTGRES_HOST")
-	dbPort := os.Getenv("POSTGRES_PORT")
-	dbUser := os.Getenv("POSTGRES_USER")
-	dbPwd := os.Getenv("POSTGRES_PASSWORD")
-	dbName := os.Getenv("POSTGRES_DB")
-	if dbHost == "" {
-		ts.T().Skip("No DB configuration provided.")
+	dbCfg, err := datastore.NewConfig()
+	if err != nil {
+		ts.T().Fatalf("Invalid database config: %s", err)
 	}
-	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s", dbHost, dbUser, dbPwd, dbName)
-	if dbPort != "" {
-		dsn = fmt.Sprintf("%s port=%s", dsn, dbPort)
-	}
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Discard})
+	dbCfg.TablePrefix = "acc_test_"
+	db, err := datastore.Open(dbCfg)
 	if err != nil {
 		ts.T().Fatalf("Failed to connect to the DB: %s", err)
 	}
-	ts.db = db
-	store := accounts.NewGormStore(db)
-	ts.srv = accounts.NewService(store)
-}
 
-func (ts *AccountsIntegrationTestSuite) SetupTest() {
-	_ = ts.db.Migrator().DropTable(&accounts.Amount{}, &accounts.Account{})
-	_ = ts.db.AutoMigrate(&accounts.Account{}, &accounts.Amount{})
+	ts.db = db.Session(&gorm.Session{NewDB: true})
+	store := accounts.NewGormStore(db.Session(&gorm.Session{NewDB: true}))
+	ts.srv = accounts.NewService(store)
+
+	err = db.Migrator().AutoMigrate(&accounts.Amount{}, &accounts.Account{})
+	if err != nil {
+		ts.T().Fatalf("Failed to migrate required tables: %s", err)
+	}
 }
 
 func (ts *AccountsIntegrationTestSuite) TestCreateAccount() {

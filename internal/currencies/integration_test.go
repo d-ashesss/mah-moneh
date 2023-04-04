@@ -3,13 +3,10 @@
 package currencies_test
 
 import (
-	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/currencies"
+	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"os"
 	"testing"
 )
 
@@ -20,30 +17,24 @@ type CurrenciesIntegrationTestSuite struct {
 }
 
 func (ts *CurrenciesIntegrationTestSuite) SetupSuite() {
-	dbHost := os.Getenv("POSTGRES_HOST")
-	dbPort := os.Getenv("POSTGRES_PORT")
-	dbUser := os.Getenv("POSTGRES_USER")
-	dbPwd := os.Getenv("POSTGRES_PASSWORD")
-	dbName := os.Getenv("POSTGRES_DB")
-	if dbHost == "" {
-		ts.T().Skip("No DB configuration provided.")
+	dbCfg, err := datastore.NewConfig()
+	if err != nil {
+		ts.T().Fatalf("Invalid database config: %s", err)
 	}
-	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s", dbHost, dbUser, dbPwd, dbName)
-	if dbPort != "" {
-		dsn = fmt.Sprintf("%s port=%s", dsn, dbPort)
-	}
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Discard})
+	dbCfg.TablePrefix = "crc_test_"
+	db, err := datastore.Open(dbCfg)
 	if err != nil {
 		ts.T().Fatalf("Failed to connect to the DB: %s", err)
 	}
-	ts.db = db
-	store := currencies.NewGormStore(db)
-	ts.srv = currencies.NewService(store)
-}
 
-func (ts *CurrenciesIntegrationTestSuite) SetupTest() {
-	_ = ts.db.Migrator().DropTable(&currencies.Rate{})
-	_ = ts.db.AutoMigrate(&currencies.Rate{})
+	ts.db = db.Session(&gorm.Session{NewDB: true})
+	store := currencies.NewGormStore(db.Session(&gorm.Session{NewDB: true}))
+	ts.srv = currencies.NewService(store)
+
+	err = db.Migrator().AutoMigrate(&currencies.Rate{})
+	if err != nil {
+		ts.T().Fatalf("Failed to migrate required tables: %s", err)
+	}
 }
 
 func (ts *CurrenciesIntegrationTestSuite) TestSetRate() {

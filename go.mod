@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/gofrs/uuid v4.3.0+incompatible
+	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
 	github.com/lib/pq v1.10.2
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
