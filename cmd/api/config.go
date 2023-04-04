@@ -1,22 +1,19 @@
 package main
 
 import (
-	"os"
+	"github.com/joeshaw/envdecode"
 	"time"
 )
 
 type Config struct {
-	Port            string
+	Port            string `env:"PORT,default=8080"`
 	ShutdownTimeout time.Duration
 }
 
-func LoadConfig() *Config {
-	c := &Config{
-		Port:            "8080",
+func NewConfig() *Config {
+	cfg := Config{
 		ShutdownTimeout: 60 * time.Second,
 	}
-	if port, ok := os.LookupEnv("PORT"); ok {
-		c.Port = port
-	}
-	return c
+	_ = envdecode.Decode(&cfg)
+	return &cfg
 }

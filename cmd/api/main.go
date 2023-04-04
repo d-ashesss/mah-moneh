@@ -43,7 +43,7 @@ func main() {
 
 	apiService := api.NewService(accountsService, categoriesService, transactionsService, spendingsService)
 
-	cfg := LoadConfig()
-	app := NewApp(cfg, apiService)
+	appCfg := NewConfig()
+	app := NewApp(appCfg, apiService)
 	app.Run()
 }
