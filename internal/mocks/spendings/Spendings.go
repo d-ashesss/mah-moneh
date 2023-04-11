@@ -21,6 +21,11 @@ func (_m *Spendings) AddAmount(cat *categories.Category, currency string, amount
 	_m.Called(cat, currency, amount)
 }
 
+// AddAmounts provides a mock function with given fields: cat, amounts
+func (_m *Spendings) AddAmounts(cat *categories.Category, amounts accounts.CurrencyAmounts) {
+	_m.Called(cat, amounts)
+}
+
 // AddTransaction provides a mock function with given fields: tx
 func (_m *Spendings) AddTransaction(tx *transactions.Transaction) {
 	_m.Called(tx)

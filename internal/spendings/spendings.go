@@ -23,6 +23,7 @@ var (
 
 type Spendings interface {
 	AddAmount(cat *categories.Category, currency string, amount float64)
+	AddAmounts(cat *categories.Category, amounts accounts.CurrencyAmounts)
 	GetAmount(cat *categories.Category, currency string) float64
 	GetAmounts(cat *categories.Category) accounts.CurrencyAmounts
 	AddTransaction(tx *transactions.Transaction)
@@ -31,8 +32,8 @@ type Spendings interface {
 // spendings contains calculated funds changes for a specific period of time.
 type spendings map[uuid.UUID]accounts.CurrencyAmounts
 
-// newSpendings initializes new spendings structure.
-func newSpendings(cats []*categories.Category) spendings {
+// NewSpendings initializes new spendings structure.
+func NewSpendings(cats []*categories.Category) Spendings {
 	spent := make(spendings)
 	for _, cat := range cats {
 		if _, ok := spent[cat.UUID]; !ok {
@@ -56,6 +57,12 @@ func (s spendings) AddAmount(cat *categories.Category, currency string, amount f
 		s[Uncategorized.UUID][currency] += amount
 	}
 	s[Total.UUID][currency] += amount
+}
+
+func (s spendings) AddAmounts(cat *categories.Category, amounts accounts.CurrencyAmounts) {
+	for currency, amount := range amounts {
+		s.AddAmount(cat, currency, amount)
+	}
 }
 
 func (s spendings) GetAmount(cat *categories.Category, currency string) float64 {

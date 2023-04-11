@@ -44,7 +44,8 @@ func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month st
 	if err != nil {
 		return nil, err
 	}
-	spent[Unaccounted.UUID] = capt.Diff(spent[Total.UUID])
+	unaccounted := capt.Diff(spent.GetAmounts(Total))
+	spent.AddAmounts(Unaccounted, unaccounted)
 	return spent, nil
 }
 
@@ -75,12 +76,12 @@ func (s *Service) getCapitalDiff(ctx context.Context, u *users.User, month strin
 }
 
 // getTransactionSummary calculates the sum of transactions recorded during given month.
-func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, month string) (spendings, error) {
+func (s *Service) getTransactionSummary(ctx context.Context, u *users.User, month string) (Spendings, error) {
 	cats, err := s.categories.GetUserCategories(ctx, u)
 	if err != nil {
 		return nil, err
 	}
-	spent := newSpendings(cats)
+	spent := NewSpendings(cats)
 
 	txs, err := s.transactions.GetUserTransactions(ctx, u, month)
 	if err != nil {
