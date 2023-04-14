@@ -20,9 +20,8 @@ func NewSpendingsResponse(spent spendings.Spendings, cats []*categories.Category
 	for _, cat := range cats {
 		r[cat.UUID.String()] = spent.GetAmounts(cat)
 	}
-	r["uncategorized"] = spent.GetAmounts(spendings.Uncategorized)
-	r["unaccounted"] = spent.GetAmounts(spendings.Unaccounted)
-	r["total"] = spent.GetAmounts(spendings.Total)
+	r["uncategorized"] = spent.GetUncategorized()
+	r["unaccounted"] = spent.GetUnaccounted()
 	return r
 }
 

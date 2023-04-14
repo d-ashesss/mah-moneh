@@ -59,5 +59,14 @@ func (a CurrencyAmounts) Diff(from CurrencyAmounts) CurrencyAmounts {
 	for currency, amount := range from {
 		diff[currency] -= amount
 	}
-	return diff
+	return diff.filterZeroValues()
+}
+
+func (a CurrencyAmounts) filterZeroValues() CurrencyAmounts {
+	for currency, amount := range a {
+		if -0.0001 < amount && amount < 0.0001 {
+			delete(a, currency)
+		}
+	}
+	return a
 }

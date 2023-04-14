@@ -25,19 +25,19 @@ func (ts *SpendingsTestSuite) SetupTest() {
 func (ts *SpendingsTestSuite) TestAddAmount_AddToCategory() {
 	ts.spendings.AddAmount(ts.category, "usd", 3)
 	ts.spendings.AddAmount(ts.category, "usd", 5.5)
-	got := ts.spendings.GetAmount(ts.category, "usd")
-	ts.InDelta(8.5, got, 0.001)
-	gotTotal := ts.spendings.GetAmount(spendings.Total, "usd")
-	ts.InDelta(8.5, gotTotal, 0.001)
+	gotCat := ts.spendings.GetAmount(ts.category, "usd")
+	ts.InDelta(8.5, gotCat, 0.001)
+	gotTotal := ts.spendings.GetTotal()
+	ts.InDelta(8.5, gotTotal["usd"], 0.001)
 }
 
 func (ts *SpendingsTestSuite) TestAddAmount_AddUncategorized() {
 	ts.spendings.AddAmount(nil, "usd", 3)
 	ts.spendings.AddAmount(nil, "usd", 5.5)
-	got := ts.spendings.GetAmount(spendings.Uncategorized, "usd")
-	ts.InDelta(8.5, got, 0.001)
-	gotTotal := ts.spendings.GetAmount(spendings.Total, "usd")
-	ts.InDelta(8.5, gotTotal, 0.001)
+	gotUncat := ts.spendings.GetUncategorized()
+	ts.InDelta(8.5, gotUncat["usd"], 0.001)
+	gotTotal := ts.spendings.GetTotal()
+	ts.InDelta(8.5, gotTotal["usd"], 0.001)
 }
 
 func (ts *SpendingsTestSuite) TestAddAmount() {
@@ -45,10 +45,10 @@ func (ts *SpendingsTestSuite) TestAddAmount() {
 	ts.spendings.AddAmount(nil, "usd", 5.5)
 	gotCat := ts.spendings.GetAmount(ts.category, "usd")
 	ts.InDelta(3, gotCat, 0.001)
-	gotUncat := ts.spendings.GetAmount(spendings.Uncategorized, "usd")
-	ts.InDelta(5.5, gotUncat, 0.001)
-	gotTotal := ts.spendings.GetAmount(spendings.Total, "usd")
-	ts.InDelta(8.5, gotTotal, 0.001)
+	gotUncat := ts.spendings.GetUncategorized()
+	ts.InDelta(5.5, gotUncat["usd"], 0.001)
+	gotTotal := ts.spendings.GetTotal()
+	ts.InDelta(8.5, gotTotal["usd"], 0.001)
 }
 
 func TestSpendings(t *testing.T) {

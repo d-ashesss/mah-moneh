@@ -44,7 +44,7 @@ func (s *Service) GetMonthSpendings(ctx context.Context, u *users.User, month st
 	if err != nil {
 		return nil, err
 	}
-	unaccounted := capt.Diff(spent.GetAmounts(Total))
+	unaccounted := capt.Diff(spent.GetTotal())
 	spent.AddAmounts(Unaccounted, unaccounted)
 	return spent, nil
 }

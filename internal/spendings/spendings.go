@@ -16,9 +16,6 @@ var (
 	Unaccounted = &categories.Category{
 		Model: datastore.Model{UUID: uuid.NewV5(uuid.Nil, "Unaccounted")},
 	}
-	Total = &categories.Category{
-		Model: datastore.Model{UUID: uuid.NewV5(uuid.Nil, "Total")},
-	}
 )
 
 type Spendings interface {
@@ -26,6 +23,9 @@ type Spendings interface {
 	AddAmounts(cat *categories.Category, amounts accounts.CurrencyAmounts)
 	GetAmount(cat *categories.Category, currency string) float64
 	GetAmounts(cat *categories.Category) accounts.CurrencyAmounts
+	GetUncategorized() accounts.CurrencyAmounts
+	GetUnaccounted() accounts.CurrencyAmounts
+	GetTotal() accounts.CurrencyAmounts
 	AddTransaction(tx *transactions.Transaction)
 }
 
@@ -42,7 +42,6 @@ func NewSpendings(cats []*categories.Category) Spendings {
 	}
 	spent[Uncategorized.UUID] = accounts.NewCurrencyAmounts()
 	spent[Unaccounted.UUID] = accounts.NewCurrencyAmounts()
-	spent[Total.UUID] = accounts.NewCurrencyAmounts()
 	return spent
 }
 
@@ -56,7 +55,6 @@ func (s spendings) AddAmount(cat *categories.Category, currency string, amount f
 	} else {
 		s[Uncategorized.UUID][currency] += amount
 	}
-	s[Total.UUID][currency] += amount
 }
 
 func (s spendings) AddAmounts(cat *categories.Category, amounts accounts.CurrencyAmounts) {
@@ -81,4 +79,25 @@ func (s spendings) GetAmounts(cat *categories.Category) accounts.CurrencyAmounts
 
 func (s spendings) AddTransaction(tx *transactions.Transaction) {
 	s.AddAmount(tx.Category, tx.Currency, tx.Amount)
+}
+
+func (s spendings) GetUncategorized() accounts.CurrencyAmounts {
+	return s[Uncategorized.UUID]
+}
+
+func (s spendings) GetUnaccounted() accounts.CurrencyAmounts {
+	return s[Unaccounted.UUID]
+}
+
+func (s spendings) GetTotal() accounts.CurrencyAmounts {
+	t := accounts.NewCurrencyAmounts()
+	for UUID, amounts := range s {
+		if UUID == Unaccounted.UUID {
+			continue
+		}
+		for currency, amount := range amounts {
+			t[currency] += amount
+		}
+	}
+	return t
 }
