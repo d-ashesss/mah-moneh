@@ -39,11 +39,11 @@ func (s *Service) GetUserAccounts(ctx context.Context, u *users.User) (AccountCo
 	return s.db.GetUserAccounts(ctx, u)
 }
 
-func (s *Service) SetAccountAmount(ctx context.Context, acc *Account, month string, currency string, amount float64) error {
+func (s *Service) SetAccountAmount(ctx context.Context, acc *Account, month string, currency Currency, amount float64) error {
 	return s.db.SetAccountAmount(ctx, acc, month, currency, amount)
 }
 
-func (s *Service) SetAccountCurrentAmount(ctx context.Context, acc *Account, currency string, amount float64) error {
+func (s *Service) SetAccountCurrentAmount(ctx context.Context, acc *Account, currency Currency, amount float64) error {
 	month := time.Now().Format(FmtYearMonth)
 	return s.db.SetAccountAmount(ctx, acc, month, currency, amount)
 }

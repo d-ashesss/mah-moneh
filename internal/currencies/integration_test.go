@@ -3,6 +3,7 @@
 package currencies_test
 
 import (
+	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/currencies"
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/stretchr/testify/suite"
@@ -80,7 +81,7 @@ func (ts *CurrenciesIntegrationTestSuite) TestGetRate() {
 	ts.InDelta(0.0, rate, 0.001)
 }
 
-func (ts *CurrenciesIntegrationTestSuite) createRate(base, target, month string, rate float64) {
+func (ts *CurrenciesIntegrationTestSuite) createRate(base, target accounts.Currency, month string, rate float64) {
 	ts.T().Helper()
 	r := &currencies.Rate{
 		Base:      base,

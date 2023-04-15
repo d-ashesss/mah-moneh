@@ -23,7 +23,7 @@ type AccountStore interface {
 	// GetUserAccounts retrieves all user accounts.
 	GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error)
 	// SetAccountAmount sets the amount of funds on the account.
-	SetAccountAmount(ctx context.Context, acc *Account, month string, currency string, amount float64) error
+	SetAccountAmount(ctx context.Context, acc *Account, month string, currency Currency, amount float64) error
 	// GetAccountAmounts retrieves amount of funds for each currency on the account for the specified month.
 	GetAccountAmounts(ctx context.Context, acc *Account, month string) (AmountCollection, error)
 }
@@ -70,7 +70,7 @@ func (s *gormStore) GetUserAccounts(ctx context.Context, u *users.User) (Account
 	return accs, nil
 }
 
-func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, month string, currency string, amount float64) error {
+func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, month string, currency Currency, amount float64) error {
 	a := &Amount{Account: acc, YearMonth: month, CurrencyCode: currency, Amount: amount}
 	return s.db.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns: []clause.Column{
@@ -82,7 +82,7 @@ func (s *gormStore) SetAccountAmount(ctx context.Context, acc *Account, month st
 	}).Save(a).Error
 }
 
-func (s *gormStore) GetAccountAmount(ctx context.Context, acc *Account, month string, currency string) (*Amount, error) {
+func (s *gormStore) GetAccountAmount(ctx context.Context, acc *Account, month string, currency Currency) (*Amount, error) {
 	amount := &Amount{}
 	if err := s.db.WithContext(ctx).
 		Where("account_uuid = ?", acc.UUID).
@@ -114,8 +114,8 @@ func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account, month s
 	return amounts, nil
 }
 
-func (s *gormStore) GetAccountCurrencies(ctx context.Context, acc *Account) ([]string, error) {
-	var currencies []string
+func (s *gormStore) GetAccountCurrencies(ctx context.Context, acc *Account) ([]Currency, error) {
+	var currencies []Currency
 	err := s.db.WithContext(ctx).
 		Model(&Amount{}).
 		Distinct().

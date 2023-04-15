@@ -2,6 +2,7 @@ package transactions
 
 import (
 	"context"
+	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
@@ -15,7 +16,7 @@ func NewService(db Store) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) CreateTransaction(ctx context.Context, u *users.User, month string, currency string, amt float64, desc string, cat *categories.Category) (*Transaction, error) {
+func (s *Service) CreateTransaction(ctx context.Context, u *users.User, month string, currency accounts.Currency, amt float64, desc string, cat *categories.Category) (*Transaction, error) {
 	tx := NewTransaction(u, month, currency, amt, desc, cat)
 	if err := s.db.SaveTransaction(ctx, tx); err != nil {
 		return nil, err

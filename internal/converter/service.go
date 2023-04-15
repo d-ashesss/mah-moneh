@@ -3,7 +3,7 @@ package converter
 import "github.com/d-ashesss/mah-moneh/internal/accounts"
 
 type CurrencyService interface {
-	GetRate(base, target, month string) float64
+	GetRate(base, target accounts.Currency, month string) float64
 }
 
 // Service represents converter service.
@@ -17,7 +17,7 @@ func NewService(cs CurrencyService) *Service {
 }
 
 // GetTotal calculates total amount in specified currency.
-func (s *Service) GetTotal(amounts accounts.CurrencyAmounts, targetCurrency string, month string) float64 {
+func (s *Service) GetTotal(amounts accounts.CurrencyAmounts, targetCurrency accounts.Currency, month string) float64 {
 	var total float64
 	for currency, amount := range amounts {
 		rate := s.currencies.GetRate(currency, targetCurrency, month)

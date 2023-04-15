@@ -16,16 +16,16 @@ type ConverterServiceTestSuite struct {
 
 func (ts *ConverterServiceTestSuite) SetupTest() {
 	cs := mocks.NewCurrencyService(ts.T())
-	cs.On("GetRate", "usd", "usd", mock.AnythingOfType("string")).Return(1.0).Maybe()
-	cs.On("GetRate", "usd", "eur", mock.AnythingOfType("string")).Return(1.1).Maybe()
-	cs.On("GetRate", "usd", "btc", mock.AnythingOfType("string")).Return(0.1).Maybe()
-	cs.On("GetRate", "eur", "eur", mock.AnythingOfType("string")).Return(1.0).Maybe()
-	cs.On("GetRate", "eur", "usd", mock.AnythingOfType("string")).Return(0.91).Maybe()
-	cs.On("GetRate", "eur", "btc", mock.AnythingOfType("string")).Return(0.091).Maybe()
-	cs.On("GetRate", "btc", "btc", mock.AnythingOfType("string")).Return(1.0).Maybe()
-	cs.On("GetRate", "btc", "usd", mock.AnythingOfType("string")).Return(10.0).Maybe()
-	cs.On("GetRate", "btc", "eur", mock.AnythingOfType("string")).Return(10.99).Maybe()
-	cs.On("GetRate", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(0.0).Maybe()
+	cs.On("GetRate", accounts.Currency("usd"), accounts.Currency("usd"), mock.AnythingOfType("string")).Return(1.0).Maybe()
+	cs.On("GetRate", accounts.Currency("usd"), accounts.Currency("eur"), mock.AnythingOfType("string")).Return(1.1).Maybe()
+	cs.On("GetRate", accounts.Currency("usd"), accounts.Currency("btc"), mock.AnythingOfType("string")).Return(0.1).Maybe()
+	cs.On("GetRate", accounts.Currency("eur"), accounts.Currency("eur"), mock.AnythingOfType("string")).Return(1.0).Maybe()
+	cs.On("GetRate", accounts.Currency("eur"), accounts.Currency("usd"), mock.AnythingOfType("string")).Return(0.91).Maybe()
+	cs.On("GetRate", accounts.Currency("eur"), accounts.Currency("btc"), mock.AnythingOfType("string")).Return(0.091).Maybe()
+	cs.On("GetRate", accounts.Currency("btc"), accounts.Currency("btc"), mock.AnythingOfType("string")).Return(1.0).Maybe()
+	cs.On("GetRate", accounts.Currency("btc"), accounts.Currency("usd"), mock.AnythingOfType("string")).Return(10.0).Maybe()
+	cs.On("GetRate", accounts.Currency("btc"), accounts.Currency("eur"), mock.AnythingOfType("string")).Return(10.99).Maybe()
+	cs.On("GetRate", mock.AnythingOfType("accounts.Currency"), mock.AnythingOfType("accounts.Currency"), mock.AnythingOfType("string")).Return(0.0).Maybe()
 	ts.srv = converter.NewService(cs)
 }
 

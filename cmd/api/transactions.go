@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
@@ -12,11 +13,11 @@ import (
 )
 
 type CreateTransactionInput struct {
-	Month       string  `json:"month" binding:"required,yearmonth"`
-	Currency    string  `json:"currency" binding:"required"`
-	Amount      float64 `json:"amount" binding:"required"`
-	Description string  `json:"description"`
-	Category    string  `json:"category_uuid"`
+	Month       string            `json:"month" binding:"required,yearmonth"`
+	Currency    accounts.Currency `json:"currency" binding:"required"`
+	Amount      float64           `json:"amount" binding:"required"`
+	Description string            `json:"description"`
+	Category    string            `json:"category_uuid"`
 }
 
 type GetTransactionInput struct {
@@ -43,12 +44,12 @@ func (a *App) transaction(c *gin.Context) (*transactions.Transaction, error) {
 }
 
 type TransactionResponse struct {
-	UUID        string  `json:"uuid"`
-	Month       string  `json:"month"`
-	Currency    string  `json:"currency"`
-	Amount      float64 `json:"amount"`
-	Description string  `json:"description"`
-	Category    string  `json:"category_uuid"`
+	UUID        string            `json:"uuid"`
+	Month       string            `json:"month"`
+	Currency    accounts.Currency `json:"currency"`
+	Amount      float64           `json:"amount"`
+	Description string            `json:"description"`
+	Category    string            `json:"category_uuid"`
 }
 
 func NewTransactionResponse(tx *transactions.Transaction) *TransactionResponse {

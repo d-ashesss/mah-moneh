@@ -34,11 +34,11 @@ func (s *Service) DeleteAccount(ctx context.Context, acc *accounts.Account) erro
 	return s.accounts.DeleteAccount(ctx, acc)
 }
 
-func (s *Service) SetAccountAmount(ctx context.Context, acc *accounts.Account, month string, currency string, amount float64) error {
+func (s *Service) SetAccountAmount(ctx context.Context, acc *accounts.Account, month string, currency accounts.Currency, amount float64) error {
 	return s.accounts.SetAccountAmount(ctx, acc, month, currency, amount)
 }
 
-func (s *Service) SetAccountCurrentAmount(ctx context.Context, acc *accounts.Account, currency string, amount float64) error {
+func (s *Service) SetAccountCurrentAmount(ctx context.Context, acc *accounts.Account, currency accounts.Currency, amount float64) error {
 	return s.accounts.SetAccountCurrentAmount(ctx, acc, currency, amount)
 }
 

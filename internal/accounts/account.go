@@ -21,12 +21,14 @@ func NewAccount(u *users.User, name string) *Account {
 // AccountCollection represents a collection of account entities.
 type AccountCollection []*Account
 
+type Currency string
+
 // Amount represents account's amount entity.
 type Amount struct {
 	AccountUUID  uuid.UUID `gorm:"primaryKey"`
 	Account      *Account  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	YearMonth    string    `gorm:"primaryKey;type:varchar(7);notNull"`
-	CurrencyCode string    `gorm:"primaryKey;notNull"`
+	CurrencyCode Currency  `gorm:"primaryKey;notNull"`
 	Amount       float64
 }
 
@@ -43,7 +45,7 @@ func (a AmountCollection) GetCurrencyAmounts() CurrencyAmounts {
 }
 
 // CurrencyAmounts contains amount per currency.
-type CurrencyAmounts map[string]float64
+type CurrencyAmounts map[Currency]float64
 
 // NewCurrencyAmounts creates new currency amounts instance.
 func NewCurrencyAmounts() CurrencyAmounts {

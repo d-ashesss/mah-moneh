@@ -2,6 +2,7 @@ package currencies_test
 
 import (
 	"errors"
+	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/currencies"
 	mocks "github.com/d-ashesss/mah-moneh/internal/mocks/currencies"
 	"github.com/stretchr/testify/mock"
@@ -21,7 +22,7 @@ func (ts *CurrenciesServiceTestSuite) SetupTest() {
 }
 
 func (ts *CurrenciesServiceTestSuite) TestSetRate() {
-	ts.store.On("SetRate", "usd", "eur", "2010-10", 10.0).
+	ts.store.On("SetRate", accounts.Currency("usd"), accounts.Currency("eur"), "2010-10", 10.0).
 		Return(nil).Once()
 	err := ts.srv.SetRate("usd", "eur", "2010-10", 10)
 	ts.Require().NoError(err, "Failed to set the rate.")
@@ -29,9 +30,9 @@ func (ts *CurrenciesServiceTestSuite) TestSetRate() {
 
 func (ts *CurrenciesServiceTestSuite) TestGetRate() {
 	eurRate := &currencies.Rate{Rate: 1.1}
-	ts.store.On("GetRate", "usd", "eur", "2010-10").
+	ts.store.On("GetRate", accounts.Currency("usd"), accounts.Currency("eur"), "2010-10").
 		Return(eurRate, nil)
-	ts.store.On("GetRate", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).
+	ts.store.On("GetRate", mock.AnythingOfType("accounts.Currency"), mock.AnythingOfType("accounts.Currency"), mock.AnythingOfType("string")).
 		Return(nil, errors.New("not found")).Maybe()
 
 	eur := ts.srv.GetRate("usd", "eur", "2010-10")

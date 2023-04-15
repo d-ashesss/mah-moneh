@@ -17,7 +17,7 @@ type Spendings struct {
 }
 
 // AddAmount provides a mock function with given fields: cat, currency, amount
-func (_m *Spendings) AddAmount(cat *categories.Category, currency string, amount float64) {
+func (_m *Spendings) AddAmount(cat *categories.Category, currency accounts.Currency, amount float64) {
 	_m.Called(cat, currency, amount)
 }
 
@@ -32,11 +32,11 @@ func (_m *Spendings) AddTransaction(tx *transactions.Transaction) {
 }
 
 // GetAmount provides a mock function with given fields: cat, currency
-func (_m *Spendings) GetAmount(cat *categories.Category, currency string) float64 {
+func (_m *Spendings) GetAmount(cat *categories.Category, currency accounts.Currency) float64 {
 	ret := _m.Called(cat, currency)
 
 	var r0 float64
-	if rf, ok := ret.Get(0).(func(*categories.Category, string) float64); ok {
+	if rf, ok := ret.Get(0).(func(*categories.Category, accounts.Currency) float64); ok {
 		r0 = rf(cat, currency)
 	} else {
 		r0 = ret.Get(0).(float64)
@@ -52,6 +52,54 @@ func (_m *Spendings) GetAmounts(cat *categories.Category) accounts.CurrencyAmoun
 	var r0 accounts.CurrencyAmounts
 	if rf, ok := ret.Get(0).(func(*categories.Category) accounts.CurrencyAmounts); ok {
 		r0 = rf(cat)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(accounts.CurrencyAmounts)
+		}
+	}
+
+	return r0
+}
+
+// GetTotal provides a mock function with given fields:
+func (_m *Spendings) GetTotal() accounts.CurrencyAmounts {
+	ret := _m.Called()
+
+	var r0 accounts.CurrencyAmounts
+	if rf, ok := ret.Get(0).(func() accounts.CurrencyAmounts); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(accounts.CurrencyAmounts)
+		}
+	}
+
+	return r0
+}
+
+// GetUnaccounted provides a mock function with given fields:
+func (_m *Spendings) GetUnaccounted() accounts.CurrencyAmounts {
+	ret := _m.Called()
+
+	var r0 accounts.CurrencyAmounts
+	if rf, ok := ret.Get(0).(func() accounts.CurrencyAmounts); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(accounts.CurrencyAmounts)
+		}
+	}
+
+	return r0
+}
+
+// GetUncategorized provides a mock function with given fields:
+func (_m *Spendings) GetUncategorized() accounts.CurrencyAmounts {
+	ret := _m.Called()
+
+	var r0 accounts.CurrencyAmounts
+	if rf, ok := ret.Get(0).(func() accounts.CurrencyAmounts); ok {
+		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(accounts.CurrencyAmounts)

@@ -117,11 +117,11 @@ func (_m *AccountStore) GetUserAccounts(ctx context.Context, u *users.User) (acc
 }
 
 // SetAccountAmount provides a mock function with given fields: ctx, acc, month, currency, amount
-func (_m *AccountStore) SetAccountAmount(ctx context.Context, acc *accounts.Account, month string, currency string, amount float64) error {
+func (_m *AccountStore) SetAccountAmount(ctx context.Context, acc *accounts.Account, month string, currency accounts.Currency, amount float64) error {
 	ret := _m.Called(ctx, acc, month, currency, amount)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string, string, float64) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *accounts.Account, string, accounts.Currency, float64) error); ok {
 		r0 = rf(ctx, acc, month, currency, amount)
 	} else {
 		r0 = ret.Error(0)

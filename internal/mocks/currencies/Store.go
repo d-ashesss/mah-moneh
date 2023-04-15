@@ -3,7 +3,9 @@
 package mocks
 
 import (
+	accounts "github.com/d-ashesss/mah-moneh/internal/accounts"
 	currencies "github.com/d-ashesss/mah-moneh/internal/currencies"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -13,11 +15,11 @@ type Store struct {
 }
 
 // GetRate provides a mock function with given fields: base, target, month
-func (_m *Store) GetRate(base string, target string, month string) (*currencies.Rate, error) {
+func (_m *Store) GetRate(base accounts.Currency, target accounts.Currency, month string) (*currencies.Rate, error) {
 	ret := _m.Called(base, target, month)
 
 	var r0 *currencies.Rate
-	if rf, ok := ret.Get(0).(func(string, string, string) *currencies.Rate); ok {
+	if rf, ok := ret.Get(0).(func(accounts.Currency, accounts.Currency, string) *currencies.Rate); ok {
 		r0 = rf(base, target, month)
 	} else {
 		if ret.Get(0) != nil {
@@ -26,7 +28,7 @@ func (_m *Store) GetRate(base string, target string, month string) (*currencies.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string, string) error); ok {
+	if rf, ok := ret.Get(1).(func(accounts.Currency, accounts.Currency, string) error); ok {
 		r1 = rf(base, target, month)
 	} else {
 		r1 = ret.Error(1)
@@ -36,11 +38,11 @@ func (_m *Store) GetRate(base string, target string, month string) (*currencies.
 }
 
 // SetRate provides a mock function with given fields: base, target, month, rate
-func (_m *Store) SetRate(base string, target string, month string, rate float64) error {
+func (_m *Store) SetRate(base accounts.Currency, target accounts.Currency, month string, rate float64) error {
 	ret := _m.Called(base, target, month, rate)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, string, float64) error); ok {
+	if rf, ok := ret.Get(0).(func(accounts.Currency, accounts.Currency, string, float64) error); ok {
 		r0 = rf(base, target, month, rate)
 	} else {
 		r0 = ret.Error(0)

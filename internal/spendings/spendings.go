@@ -19,9 +19,9 @@ var (
 )
 
 type Spendings interface {
-	AddAmount(cat *categories.Category, currency string, amount float64)
+	AddAmount(cat *categories.Category, currency accounts.Currency, amount float64)
 	AddAmounts(cat *categories.Category, amounts accounts.CurrencyAmounts)
-	GetAmount(cat *categories.Category, currency string) float64
+	GetAmount(cat *categories.Category, currency accounts.Currency) float64
 	GetAmounts(cat *categories.Category) accounts.CurrencyAmounts
 	GetUncategorized() accounts.CurrencyAmounts
 	GetUnaccounted() accounts.CurrencyAmounts
@@ -45,7 +45,7 @@ func NewSpendings(cats []*categories.Category) Spendings {
 	return spent
 }
 
-func (s spendings) AddAmount(cat *categories.Category, currency string, amount float64) {
+func (s spendings) AddAmount(cat *categories.Category, currency accounts.Currency, amount float64) {
 	UUID := uuid.Nil
 	if cat != nil {
 		UUID = cat.UUID
@@ -63,7 +63,7 @@ func (s spendings) AddAmounts(cat *categories.Category, amounts accounts.Currenc
 	}
 }
 
-func (s spendings) GetAmount(cat *categories.Category, currency string) float64 {
+func (s spendings) GetAmount(cat *categories.Category, currency accounts.Currency) float64 {
 	if amounts, found := s[cat.UUID]; found && amounts != nil {
 		return amounts[currency]
 	}

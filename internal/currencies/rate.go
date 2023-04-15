@@ -1,8 +1,10 @@
 package currencies
 
+import "github.com/d-ashesss/mah-moneh/internal/accounts"
+
 type Rate struct {
-	Base      string `gorm:"primaryKey"`
-	Target    string `gorm:"primaryKey"`
-	YearMonth string `gorm:"primaryKey"`
+	Base      accounts.Currency `gorm:"primaryKey"`
+	Target    accounts.Currency `gorm:"primaryKey"`
+	YearMonth string            `gorm:"primaryKey"`
 	Rate      float64
 }
