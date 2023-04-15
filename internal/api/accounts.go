@@ -8,14 +8,7 @@ import (
 )
 
 func (s *Service) CreateAccount(ctx context.Context, u *users.User, name string) (*accounts.Account, error) {
-	acc := &accounts.Account{
-		User: u,
-		Name: name,
-	}
-	if err := s.accounts.CreateAccount(ctx, acc); err != nil {
-		return nil, err
-	}
-	return acc, nil
+	return s.accounts.CreateAccount(ctx, u, name)
 }
 
 func (s *Service) GetAccount(ctx context.Context, UUID uuid.UUID) (*accounts.Account, error) {

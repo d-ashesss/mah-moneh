@@ -43,9 +43,8 @@ func (ts *AccountsIntegrationTestSuite) SetupSuite() {
 
 func (ts *AccountsIntegrationTestSuite) TestCreateAccount() {
 	u := ts.createTestingUser()
-	acc := accounts.NewAccount(u, "test-create-account")
 
-	err := ts.srv.CreateAccount(context.Background(), acc)
+	acc, err := ts.srv.CreateAccount(context.Background(), u, "test-create-account")
 	ts.Require().NoError(err, "Failed to create account.")
 
 	foundAcc := &accounts.Account{}

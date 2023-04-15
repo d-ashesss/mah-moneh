@@ -28,8 +28,8 @@ func (ts *AccountsServiceTestSuite) TestCreateAccount() {
 	ts.store.On("CreateAccount", ctx, mock.AnythingOfType("*accounts.Account")).
 		Return(nil).Once()
 
-	acc := &accounts.Account{}
-	err := ts.srv.CreateAccount(ctx, acc)
+	u := &users.User{}
+	_, err := ts.srv.CreateAccount(ctx, u, "")
 	ts.Require().NoError(err, "Failed to create account.")
 }
 

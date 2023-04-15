@@ -19,8 +19,12 @@ func NewService(db AccountStore) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) CreateAccount(ctx context.Context, acc *Account) error {
-	return s.db.CreateAccount(ctx, acc)
+func (s *Service) CreateAccount(ctx context.Context, u *users.User, name string) (*Account, error) {
+	acc := NewAccount(u, name)
+	if err := s.db.CreateAccount(ctx, acc); err != nil {
+		return nil, err
+	}
+	return acc, nil
 }
 
 func (s *Service) UpdateAccount(ctx context.Context, acc *Account) error {
