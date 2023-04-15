@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/d-ashesss/mah-moneh/cmd/api/rest"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
-	"github.com/d-ashesss/mah-moneh/internal/api"
 	"github.com/d-ashesss/mah-moneh/internal/capital"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
@@ -41,9 +41,9 @@ func main() {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
-	apiService := api.NewService(accountsService, categoriesService, transactionsService, spendingsService)
+	handler := rest.NewHandler(accountsService, categoriesService, transactionsService, spendingsService)
 
 	appCfg := NewConfig()
-	app := NewApp(appCfg, apiService)
+	app := NewApp(appCfg, handler)
 	app.Run()
 }

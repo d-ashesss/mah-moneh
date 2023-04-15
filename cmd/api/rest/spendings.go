@@ -1,4 +1,4 @@
-package main
+package rest
 
 import (
 	"fmt"
@@ -13,6 +13,10 @@ type GetSpendingsInput struct {
 	Month string `uri:"month" binding:"required,yearmonth"`
 }
 
+func (i *GetSpendingsInput) Bind(c *gin.Context) error {
+	return NewErrBadRequestOrNil(c.ShouldBindUri(i))
+}
+
 type SpendingsResponse map[string]accounts.CurrencyAmounts
 
 func NewSpendingsResponse(spent spendings.Spendings, cats []*categories.Category) SpendingsResponse {
@@ -25,19 +29,21 @@ func NewSpendingsResponse(spent spendings.Spendings, cats []*categories.Category
 	return r
 }
 
-func (a *App) handleSpendingsGet(c *gin.Context) {
+func (h *handler) handleSpendingsGet(c *gin.Context) {
 	var input GetSpendingsInput
-	if err := c.ShouldBindUri(&input); err != nil {
-		c.JSON(http.StatusBadRequest, a.error(err))
+	if err := input.Bind(c); err != nil {
+		h.handleError(c, err)
 		return
 	}
-	cats, err := a.api.GetUserCategories(c, a.user(c))
+	cats, err := h.categories.GetUserCategories(c, h.user(c))
 	if err != nil {
-		panic(fmt.Errorf("failed to get user categories: %w", err))
+		h.handleError(c, fmt.Errorf("failed to get user categories: %w", err))
+		return
 	}
-	spent, err := a.api.GetUserMonthSpendings(c, a.user(c), input.Month)
+	spent, err := h.spendings.GetMonthSpendings(c, h.user(c), input.Month)
 	if err != nil {
-		panic(fmt.Errorf("failed to get user month spendings: %w", err))
+		h.handleError(c, fmt.Errorf("failed to get user month spendings: %w", err))
+		return
 	}
 	c.JSON(http.StatusOK, NewSpendingsResponse(spent, cats))
 }

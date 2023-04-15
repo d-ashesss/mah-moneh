@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/d-ashesss/mah-moneh/internal/api"
 	"golang.org/x/sync/errgroup"
 	"log"
 	"net/http"
@@ -15,24 +14,22 @@ import (
 type App struct {
 	config *Config
 	server *http.Server
-	api    *api.Service
 }
 
-func NewApp(config *Config, accountService *api.Service) *App {
+func NewApp(config *Config, handler http.Handler) *App {
 	server := &http.Server{
-		Addr: ":" + config.Port,
+		Addr:    ":" + config.Port,
+		Handler: handler,
 	}
 	app := &App{
 		config: config,
 		server: server,
-		api:    accountService,
 	}
-	app.registerHttpHandlers()
 	return app
 }
 
 func (a *App) Run() {
-	log.Println("[APP] Starting up")
+	log.Print("[APP] Starting up")
 	signalCtx, signalStop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
 	defer signalStop()
 
@@ -42,14 +39,14 @@ func (a *App) Run() {
 		log.Printf("[APP] starting http server on port %s", a.config.Port)
 		err := a.server.ListenAndServe()
 		if !errors.Is(err, http.ErrServerClosed) {
-			log.Println("[APP] HTTP server has stopped unexpectedly")
+			log.Print("[APP] HTTP server has stopped unexpectedly")
 			return err
 		}
 		return nil
 	})
 	wg.Go(func() error {
 		<-gCtx.Done()
-		log.Println("[APP] Shutting down HTTP server")
+		log.Print("[APP] Shutting down HTTP server")
 		serverCtx, serverCancel := context.WithTimeout(context.Background(), a.config.ShutdownTimeout)
 		defer serverCancel()
 		return a.server.Shutdown(serverCtx)
@@ -61,6 +58,6 @@ func (a *App) Run() {
 	})
 
 	if err := wg.Wait(); err != nil {
-		log.Println("[APP] Unexpected exit reason: ", err)
+		log.Printf("[APP] Unexpected exit reason: %s", err)
 	}
 }
