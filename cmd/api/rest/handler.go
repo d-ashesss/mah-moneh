@@ -45,6 +45,8 @@ func NewHandler(
 	r.GET("/", h.handleIndex)
 
 	r.Use(h.authenticate)
+	r.GET("/deep-vaults", h.handleIndex)
+
 	r.POST("/accounts", h.handleAccountsCreate)
 	r.GET("/accounts", h.handleAccountsList)
 	r.PUT("/accounts/:uuid", h.handleAccountsUpdate)
