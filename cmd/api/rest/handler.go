@@ -81,7 +81,12 @@ func (h *handler) authenticate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, NewErrorResponse(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	user := &users.User{UUID: uuid.FromStringOrNil(uid)}
+	UUID, err := uuid.FromString(uid)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, NewErrorResponse(http.StatusText(http.StatusUnauthorized)))
+		return
+	}
+	user := &users.User{UUID: UUID}
 	c.Set("user", user)
 	c.Next()
 }
