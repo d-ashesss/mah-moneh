@@ -24,7 +24,7 @@ import (
 
 func NewAuthRequest(user *users.User, method, target string, body io.Reader) *http.Request {
 	r := httptest.NewRequest(method, target, body)
-	r.Header.Add("Authorization", "bearer "+user.UUID.String())
+	r.Header.Add("Authorization", "Bearer "+user.UUID.String())
 	if body != nil {
 		r.Header.Add("Content-Type", "application/json")
 	}
@@ -54,6 +54,10 @@ type ErrorResponse struct {
 type RESTTestSuite struct {
 	suite.Suite
 
+	accountsService     *accounts.Service
+	categoriesService   *categories.Service
+	transactionsService *transactions.Service
+
 	handler http.Handler
 }
 
@@ -71,13 +75,13 @@ func (ts *RESTTestSuite) SetupSuite() {
 	}
 
 	accountsStore := accounts.NewGormStore(db)
-	accountsService := accounts.NewService(accountsStore)
+	ts.accountsService = accounts.NewService(accountsStore)
 	categoriesStore := categories.NewGormStore(db)
-	categoriesService := categories.NewService(categoriesStore)
+	ts.categoriesService = categories.NewService(categoriesStore)
 	transactionsStore := transactions.NewGormStore(db)
-	transactionsService := transactions.NewService(transactionsStore)
-	capitalService := capital.NewService(accountsService)
-	spendingsService := spendings.NewService(capitalService, transactionsService, categoriesService)
+	ts.transactionsService = transactions.NewService(transactionsStore)
+	capitalService := capital.NewService(ts.accountsService)
+	spendingsService := spendings.NewService(capitalService, ts.transactionsService, ts.categoriesService)
 
 	if err := db.AutoMigrate(
 		&accounts.Account{},
@@ -88,12 +92,16 @@ func (ts *RESTTestSuite) SetupSuite() {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
-	ts.handler = rest.NewHandler(accountsService, categoriesService, transactionsService, spendingsService)
+	ts.handler = rest.NewHandler(ts.accountsService, ts.categoriesService, ts.transactionsService, spendingsService)
 }
 
 func (ts *RESTTestSuite) TestRest() {
 	ts.Run("Index", ts.testIndex)
 	ts.Run("Authorization", ts.testAuthorization)
+
+	ts.Run("Errors", func() {
+		ts.Run("Accounts", ts.testAccounts)
+	})
 }
 
 func (ts *RESTTestSuite) testIndex() {
