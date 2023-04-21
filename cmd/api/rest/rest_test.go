@@ -101,6 +101,7 @@ func (ts *RESTTestSuite) TestRest() {
 
 	ts.Run("Errors", func() {
 		ts.Run("Accounts", ts.testAccounts)
+		ts.Run("Categories", ts.testCategories)
 	})
 }
 
