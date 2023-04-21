@@ -59,6 +59,16 @@ type RESTTestSuite struct {
 	transactionsService *transactions.Service
 
 	handler http.Handler
+
+	users struct {
+		main    *users.User
+		control *users.User
+	}
+	accounts struct {
+		bank uuid.UUID
+		cash uuid.UUID
+		temp uuid.UUID
+	}
 }
 
 func (ts *RESTTestSuite) SetupSuite() {
@@ -93,6 +103,9 @@ func (ts *RESTTestSuite) SetupSuite() {
 	}
 
 	ts.handler = rest.NewHandler(ts.accountsService, ts.categoriesService, ts.transactionsService, spendingsService)
+
+	ts.users.main = &users.User{UUID: uuid.Must(uuid.NewV4())}
+	ts.users.control = &users.User{UUID: uuid.Must(uuid.NewV4())}
 }
 
 func (ts *RESTTestSuite) TestRest() {
@@ -100,9 +113,13 @@ func (ts *RESTTestSuite) TestRest() {
 	ts.Run("Authorization", ts.testAuthorization)
 
 	ts.Run("Errors", func() {
-		ts.Run("Accounts", ts.testAccounts)
+		ts.Run("Accounts", ts.testAccountsErrors)
 		ts.Run("Categories", ts.testCategories)
 		ts.Run("Transactions", ts.testTransactions)
+	})
+
+	ts.Run("Create", func() {
+		ts.Run("Accounts", ts.testCreateAccounts)
 	})
 }
 
