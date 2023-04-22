@@ -15,100 +15,70 @@ func (ts *RESTTestSuite) testCategoriesErrors() {
 	user1category, err := ts.categoriesService.CreateCategory(context.Background(), user1, "test category")
 	ts.Require().NoErrorf(err, "Failed to create test category")
 
-	ts.Run("create category/invalid name", func() {
-		ts.T().Parallel()
+	tests := []ErrorTest{
+		{
+			Name:   "create category/invalid name",
+			Method: "POST",
+			Target: "/categories",
+			Auth:   user1,
+			Body:   bytes.NewBufferString(`{}`),
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid value of 'Name'",
+		},
+		{
+			Name:   "delete category/invalid id",
+			Method: "DELETE",
+			Target: "/categories/outsource",
+			Auth:   user1,
+			Body:   nil,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid value of 'UUID'",
+		},
+		{
+			Name:   "delete category/id not exists",
+			Method: "DELETE",
+			Target: "/categories/" + uuid.Must(uuid.NewV4()).String(),
+			Auth:   user1,
+			Body:   nil,
+			Code:   http.StatusNotFound,
+			Error:  "Not found",
+		},
+		{
+			Name:   "delete category/not owner",
+			Method: "DELETE",
+			Target: "/categories/" + user1category.UUID.String(),
+			Auth:   user2,
+			Body:   nil,
+			Code:   http.StatusNotFound,
+			Error:  "Not found",
+		},
+	}
 
-		body := bytes.NewBufferString("{}")
-		request := NewAuthRequest(user1, "POST", "/categories", body)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(response)
-		ts.Equal("Invalid value of 'Name'", response.Error)
-	})
-
-	ts.Run("delete category/invalid id", func() {
-		ts.T().Parallel()
-
-		request := NewAuthRequest(user1, "DELETE", "/categories/outsource", nil)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(response)
-		ts.Equal("Invalid value of 'UUID'", response.Error)
-	})
-
-	ts.Run("delete category/id not exists", func() {
-		ts.T().Parallel()
-
-		randUUID := uuid.Must(uuid.NewV4())
-		request := NewAuthRequest(user1, "DELETE", "/categories/"+randUUID.String(), nil)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusNotFound, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(response)
-		ts.Equal("Not found", response.Error)
-	})
-
-	ts.Run("delete category/not owner", func() {
-		ts.T().Parallel()
-
-		request := NewAuthRequest(user2, "DELETE", "/categories/"+user1category.UUID.String(), nil)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusNotFound, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(response)
-		ts.Equal("Not found", response.Error)
-	})
+	for _, tt := range tests {
+		ts.testError(tt)
+	}
 }
 
 func (ts *RESTTestSuite) testCreateCategories() {
-	tests := []struct {
-		Name string
-		Body string
-		Ref  *uuid.UUID
-	}{
+	tests := []CreationTest{
 		{
 			Name: "income",
-			Body: `{"name": "income"}`,
+			Body: bytes.NewBufferString(`{"name": "income"}`),
 			Ref:  &ts.categories.income,
 		},
 		{
 			Name: "groceries",
-			Body: `{"name": "groceries"}`,
+			Body: bytes.NewBufferString(`{"name": "groceries"}`),
 			Ref:  &ts.categories.income,
 		},
 		{
 			Name: "temp",
-			Body: `{"name": "temp"}`,
+			Body: bytes.NewBufferString(`{"name": "temp"}`),
 			Ref:  &ts.categories.income,
 		},
 	}
 
 	for _, tt := range tests {
-		ts.Run(tt.Name, func() {
-			ts.T().Parallel()
-
-			body := bytes.NewBufferString(tt.Body)
-			request := NewAuthRequest(ts.users.main, "POST", "/categories", body)
-			rr := NewRecorder()
-			ts.handler.ServeHTTP(rr, request)
-
-			ts.Equal(http.StatusCreated, rr.Code)
-			response := new(struct {
-				UUID string `json:"uuid"`
-			})
-			rr.FromJSON(response)
-			ts.Require().NotEmptyf(response.UUID, "Received invalid UUID value in response")
-			*tt.Ref = uuid.Must(uuid.FromString(response.UUID))
-		})
+		ts.testCreate(tt, "/categories")
 	}
 }

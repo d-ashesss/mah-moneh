@@ -17,202 +17,133 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 	user1account, err := ts.accountsService.CreateAccount(context.Background(), user1, "test account")
 	ts.Require().NoErrorf(err, "Failed to create test account")
 
-	ts.Run("create/invalid name", func() {
-		ts.T().Parallel()
+	tests := []ErrorTest{
+		{
+			Name:   "create/invalid name",
+			Method: "POST",
+			Target: "/accounts",
+			Auth:   user1,
+			Body:   bytes.NewBufferString("{}"),
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid value of 'Name'",
+		},
+		{
+			Name:   "update/invalid id",
+			Method: "PUT",
+			Target: "/accounts/wallet",
+			Auth:   user1,
+			Body:   bytes.NewBufferString("{}"),
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid value of 'UUID'",
+		},
+		{
+			Name:   "update/id not exists",
+			Method: "PUT",
+			Target: "/accounts/" + uuid.Must(uuid.NewV4()).String(),
+			Auth:   user1,
+			Body:   bytes.NewBufferString("{}"),
+			Code:   http.StatusNotFound,
+			Error:  "Not found",
+		},
+		{
+			Name:   "update/not owner",
+			Method: "PUT",
+			Target: "/accounts/" + user1account.UUID.String(),
+			Auth:   user2,
+			Body:   bytes.NewBufferString("{}"),
+			Code:   http.StatusNotFound,
+			Error:  "Not found",
+		},
+		{
+			Name:   "delete/invalid id",
+			Method: "DELETE",
+			Target: "/accounts/wallet",
+			Auth:   user1,
+			Body:   nil,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid value of 'UUID'",
+		},
+		{
+			Name:   "delete/id not exists",
+			Method: "DELETE",
+			Target: "/accounts/" + uuid.Must(uuid.NewV4()).String(),
+			Auth:   user1,
+			Body:   nil,
+			Code:   http.StatusNotFound,
+			Error:  "Not found",
+		},
+		{
+			Name:   "delete/not owner",
+			Method: "DELETE",
+			Target: "/accounts/" + user1account.UUID.String(),
+			Auth:   user2,
+			Body:   nil,
+			Code:   http.StatusNotFound,
+			Error:  "Not found",
+		},
+		{
+			Name:   "set amount/invalid month",
+			Method: "PUT",
+			Target: "/accounts/" + user1account.UUID.String() + "/amounts/201001",
+			Auth:   user1,
+			Body:   bytes.NewBufferString("{}"),
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid value of 'Month'",
+		},
+		{
+			Name:   "set amount/invalid currency",
+			Method: "PUT",
+			Target: "/accounts/" + user1account.UUID.String() + "/amounts/2010-01",
+			Auth:   user1,
+			Body:   bytes.NewBufferString("{}"),
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid value of 'Currency'",
+		},
+		{
+			Name:   "set amount/invalid amount data type",
+			Method: "PUT",
+			Target: "/accounts/" + user1account.UUID.String() + "/amounts/2010-01",
+			Auth:   user1,
+			Body:   bytes.NewBufferString(`{"currency": "USD", "amount": "100"}`),
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid request input",
+		},
+		{
+			Name:   "get amount/not owner",
+			Method: "GET",
+			Target: "/accounts/" + user1account.UUID.String() + "/amounts/2010-01",
+			Auth:   user2,
+			Body:   nil,
+			Code:   http.StatusNotFound,
+			Error:  "Not found",
+		},
+	}
 
-		body := bytes.NewBufferString(`{}`)
-		request := NewAuthRequest(user1, "POST", "/accounts", body)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Invalid value of 'Name'", response.Error)
-	})
-
-	ts.Run("update/invalid id", func() {
-		ts.T().Parallel()
-
-		body := bytes.NewBufferString(`{}`)
-		request := NewAuthRequest(user1, "PUT", "/accounts/wallet", body)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Invalid value of 'UUID'", response.Error)
-	})
-
-	ts.Run("update/id not exists", func() {
-		ts.T().Parallel()
-
-		body := bytes.NewBufferString(`{}`)
-		randUUID := uuid.Must(uuid.NewV4())
-		request := NewAuthRequest(user1, "PUT", "/accounts/"+randUUID.String(), body)
-
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusNotFound, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Not found", response.Error)
-	})
-
-	ts.Run("update/not owner", func() {
-		ts.T().Parallel()
-
-		body := bytes.NewBufferString(`{}`)
-		request := NewAuthRequest(user2, "PUT", "/accounts/"+user1account.UUID.String(), body)
-
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusNotFound, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Not found", response.Error)
-	})
-
-	ts.Run("delete/invalid id", func() {
-		ts.T().Parallel()
-
-		request := NewAuthRequest(user1, "DELETE", "/accounts/wallet", nil)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Invalid value of 'UUID'", response.Error)
-	})
-
-	ts.Run("delete/id not exists", func() {
-		ts.T().Parallel()
-
-		randUUID := uuid.Must(uuid.NewV4())
-		request := NewAuthRequest(user1, "DELETE", "/accounts/"+randUUID.String(), nil)
-
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusNotFound, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Not found", response.Error)
-	})
-
-	ts.Run("delete/not owner", func() {
-		ts.T().Parallel()
-
-		request := NewAuthRequest(user2, "DELETE", "/accounts/"+user1account.UUID.String(), nil)
-
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusNotFound, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Not found", response.Error)
-	})
-
-	ts.Run("set amount/invalid month", func() {
-		ts.T().Parallel()
-
-		body := bytes.NewBufferString(`{}`)
-		request := NewAuthRequest(user1, "PUT", "/accounts/"+user1account.UUID.String()+"/amounts/201001", body)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Invalid value of 'Month'", response.Error)
-	})
-
-	ts.Run("set amount/invalid currency", func() {
-		ts.T().Parallel()
-
-		body := bytes.NewBufferString(`{}`)
-		request := NewAuthRequest(user1, "PUT", "/accounts/"+user1account.UUID.String()+"/amounts/2010-01", body)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Invalid value of 'Currency'", response.Error)
-	})
-
-	ts.Run("set amount/invalid amount data type", func() {
-		ts.T().Parallel()
-
-		body := bytes.NewBufferString(`{"currency": "USD", "amount": "100"}`)
-		request := NewAuthRequest(user1, "PUT", "/accounts/"+user1account.UUID.String()+"/amounts/2010-01", body)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusBadRequest, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Invalid request input", response.Error)
-	})
-
-	ts.Run("get amount/not owner", func() {
-		ts.T().Parallel()
-
-		request := NewAuthRequest(user2, "GET", "/accounts/"+user1account.UUID.String()+"/amounts/2010-01", nil)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
-
-		ts.Equal(http.StatusNotFound, rr.Code)
-		response := new(ErrorResponse)
-		rr.FromJSON(&response)
-		ts.Equal("Not found", response.Error)
-	})
+	for _, tt := range tests {
+		ts.testError(tt)
+	}
 }
 
 func (ts *RESTTestSuite) testCreateAccounts() {
-	tests := []struct {
-		Name string
-		Body string
-		Ref  *uuid.UUID
-	}{
+	tests := []CreationTest{
 		{
 			Name: "bank",
-			Body: `{"name": "bank"}`,
+			Body: bytes.NewBufferString(`{"name": "bank"}`),
 			Ref:  &ts.accounts.bank,
 		},
 		{
 			Name: "cash",
-			Body: `{"name": "cash"}`,
+			Body: bytes.NewBufferString(`{"name": "cash"}`),
 			Ref:  &ts.accounts.cash,
 		},
 		{
-			Name: "temp",
-			Body: `{"name": "temp"}`,
+			Name: "temporary",
+			Body: bytes.NewBufferString(`{"name": "tmp"}`),
 			Ref:  &ts.accounts.temp,
 		},
 	}
 
 	for _, tt := range tests {
-		ts.Run(tt.Name, func() {
-			ts.T().Parallel()
-
-			body := bytes.NewBufferString(tt.Body)
-			request := NewAuthRequest(ts.users.main, "POST", "/accounts", body)
-			rr := NewRecorder()
-			ts.handler.ServeHTTP(rr, request)
-
-			ts.Equal(http.StatusCreated, rr.Code)
-			response := new(struct {
-				UUID string `json:"uuid"`
-			})
-			rr.FromJSON(response)
-			ts.Require().NotEmptyf(response.UUID, "Received invalid UUID value in response")
-			*tt.Ref = uuid.Must(uuid.FromString(response.UUID))
-		})
+		ts.testCreate(tt, "/accounts")
 	}
 }

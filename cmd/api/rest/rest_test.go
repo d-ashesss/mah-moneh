@@ -22,35 +22,6 @@ import (
 	"testing"
 )
 
-func NewAuthRequest(user *users.User, method, target string, body io.Reader) *http.Request {
-	r := httptest.NewRequest(method, target, body)
-	r.Header.Add("Authorization", "Bearer "+user.UUID.String())
-	if body != nil {
-		r.Header.Add("Content-Type", "application/json")
-	}
-	return r
-}
-
-type ResponseRecorder struct {
-	*httptest.ResponseRecorder
-}
-
-func NewRecorder() *ResponseRecorder {
-	return &ResponseRecorder{
-		ResponseRecorder: httptest.NewRecorder(),
-	}
-}
-
-func (rr *ResponseRecorder) FromJSON(v any) {
-	if err := json.Unmarshal(rr.Body.Bytes(), v); err != nil {
-		panic(err)
-	}
-}
-
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
 type RESTTestSuite struct {
 	suite.Suite
 
@@ -111,6 +82,101 @@ func (ts *RESTTestSuite) SetupSuite() {
 	ts.users.control = &users.User{UUID: uuid.Must(uuid.NewV4())}
 }
 
+type Request struct {
+	*http.Request
+}
+
+func NewRequest(method, target string, body io.Reader) *Request {
+	r := &Request{
+		Request: httptest.NewRequest(method, target, body),
+	}
+	if body != nil {
+		r.Header.Add("Content-Type", "application/json")
+	}
+	return r
+}
+
+func (r *Request) WithAuth(user *users.User) *Request {
+	r.Header.Add("Authorization", "Bearer "+user.UUID.String())
+	return r
+}
+
+func (ts *RESTTestSuite) ServeJSON(request *Request, response any) int {
+	rr := NewRecorder()
+	ts.handler.ServeHTTP(rr, request.Request)
+	rr.FromJSON(response)
+	return rr.Code
+}
+
+func (ts *RESTTestSuite) ServeString(request *Request) (int, string) {
+	rr := NewRecorder()
+	ts.handler.ServeHTTP(rr, request.Request)
+	return rr.Code, rr.Body.String()
+}
+
+type ResponseRecorder struct {
+	*httptest.ResponseRecorder
+}
+
+func NewRecorder() *ResponseRecorder {
+	return &ResponseRecorder{
+		ResponseRecorder: httptest.NewRecorder(),
+	}
+}
+
+func (rr *ResponseRecorder) FromJSON(v any) {
+	if err := json.Unmarshal(rr.Body.Bytes(), v); err != nil {
+		panic(err)
+	}
+}
+
+type ErrorTest struct {
+	Name   string
+	Method string
+	Target string
+	Auth   *users.User
+	Body   io.Reader
+	Code   int
+	Error  string
+}
+
+type ErrorTestResponse struct {
+	Error string `json:"error"`
+}
+
+type CreationTest struct {
+	Name string
+	Body io.Reader
+	Ref  *uuid.UUID
+}
+
+type CreationTestResponse struct {
+	UUID string `json:"uuid"`
+}
+
+func (ts *RESTTestSuite) testCreate(tt CreationTest, target string) {
+	ts.Run(tt.Name, func() {
+		request := NewRequest("POST", target, tt.Body).WithAuth(ts.users.main)
+		response := new(CreationTestResponse)
+		code := ts.ServeJSON(request, response)
+
+		ts.Equal(http.StatusCreated, code)
+		ts.Require().NotEmptyf(response.UUID, "Received invalid UUID value in response")
+		*tt.Ref = uuid.Must(uuid.FromString(response.UUID))
+	})
+}
+
+func (ts *RESTTestSuite) testError(tt ErrorTest) {
+	ts.Run(tt.Name, func() {
+		request := NewRequest(tt.Method, tt.Target, tt.Body).WithAuth(tt.Auth)
+		response := new(ErrorTestResponse)
+		code := ts.ServeJSON(request, response)
+
+		ts.Equal(tt.Code, code)
+		ts.Equal(tt.Error, response.Error)
+	})
+}
+
 func (ts *RESTTestSuite) TestRest() {
 	ts.Run("Index", ts.testIndex)
 	ts.Run("Authorization", ts.testAuthorization)
@@ -128,34 +194,30 @@ func (ts *RESTTestSuite) TestRest() {
 }
 
 func (ts *RESTTestSuite) testIndex() {
-	request := httptest.NewRequest("GET", "/", nil)
-	rr := httptest.NewRecorder()
-	ts.handler.ServeHTTP(rr, request)
+	request := NewRequest("GET", "/", nil)
+	code, response := ts.ServeString(request)
 
-	ts.Equal(200, rr.Code)
-	ts.Equal("ok", rr.Body.String())
+	ts.Equal(http.StatusOK, code)
+	ts.Equal("ok", response)
 }
 
 func (ts *RESTTestSuite) testAuthorization() {
 	ts.Run("Unauthorized", func() {
-		request := httptest.NewRequest("GET", "/deep-vaults", nil)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
+		request := NewRequest("GET", "/deep-vaults", nil)
+		response := new(ErrorTestResponse)
+		code := ts.ServeJSON(request, response)
 
-		ts.Equal(http.StatusUnauthorized, rr.Code)
-		r := new(ErrorResponse)
-		rr.FromJSON(&r)
-		ts.Equal(http.StatusText(http.StatusUnauthorized), r.Error)
+		ts.Equal(http.StatusUnauthorized, code)
+		ts.Equal(http.StatusText(http.StatusUnauthorized), response.Error)
 	})
 
 	ts.Run("Authorized", func() {
 		auth := &users.User{UUID: uuid.Must(uuid.NewV4())}
-		request := NewAuthRequest(auth, "GET", "/deep-vaults", nil)
-		rr := NewRecorder()
-		ts.handler.ServeHTTP(rr, request)
+		request := NewRequest("GET", "/deep-vaults", nil).WithAuth(auth)
+		code, response := ts.ServeString(request)
 
-		ts.Equal(200, rr.Code)
-		ts.Equal("ok", rr.Body.String())
+		ts.Equal(http.StatusOK, code)
+		ts.Equal("ok", response)
 	})
 }
 
