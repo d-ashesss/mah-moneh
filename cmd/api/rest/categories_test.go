@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func (ts *RESTTestSuite) testCategories() {
+func (ts *RESTTestSuite) testCategoriesErrors() {
 	user1 := &users.User{UUID: uuid.Must(uuid.NewV4())}
 	user2 := &users.User{UUID: uuid.Must(uuid.NewV4())}
 
@@ -68,4 +68,47 @@ func (ts *RESTTestSuite) testCategories() {
 		rr.FromJSON(response)
 		ts.Equal("Not found", response.Error)
 	})
+}
+
+func (ts *RESTTestSuite) testCreateCategories() {
+	tests := []struct {
+		Name string
+		Body string
+		Ref  *uuid.UUID
+	}{
+		{
+			Name: "income",
+			Body: `{"name": "income"}`,
+			Ref:  &ts.categories.income,
+		},
+		{
+			Name: "groceries",
+			Body: `{"name": "groceries"}`,
+			Ref:  &ts.categories.income,
+		},
+		{
+			Name: "temp",
+			Body: `{"name": "temp"}`,
+			Ref:  &ts.categories.income,
+		},
+	}
+
+	for _, tt := range tests {
+		ts.Run(tt.Name, func() {
+			ts.T().Parallel()
+
+			body := bytes.NewBufferString(tt.Body)
+			request := NewAuthRequest(ts.users.main, "POST", "/categories", body)
+			rr := NewRecorder()
+			ts.handler.ServeHTTP(rr, request)
+
+			ts.Equal(http.StatusCreated, rr.Code)
+			response := new(struct {
+				UUID string `json:"uuid"`
+			})
+			rr.FromJSON(response)
+			ts.Require().NotEmptyf(response.UUID, "Received invalid UUID value in response")
+			*tt.Ref = uuid.Must(uuid.FromString(response.UUID))
+		})
+	}
 }

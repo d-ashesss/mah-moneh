@@ -69,6 +69,9 @@ type RESTTestSuite struct {
 		cash uuid.UUID
 		temp uuid.UUID
 	}
+	categories struct {
+		income uuid.UUID
+	}
 }
 
 func (ts *RESTTestSuite) SetupSuite() {
@@ -114,12 +117,13 @@ func (ts *RESTTestSuite) TestRest() {
 
 	ts.Run("Errors", func() {
 		ts.Run("Accounts", ts.testAccountsErrors)
-		ts.Run("Categories", ts.testCategories)
+		ts.Run("Categories", ts.testCategoriesErrors)
 		ts.Run("Transactions", ts.testTransactions)
 	})
 
 	ts.Run("Create", func() {
 		ts.Run("Accounts", ts.testCreateAccounts)
+		ts.Run("Categories", ts.testCreateCategories)
 	})
 }
 
