@@ -150,6 +150,16 @@ type RequestTest struct {
 	Code   int
 }
 
+type CreationTest struct {
+	Name string
+	Body io.Reader
+	Ref  *uuid.UUID
+}
+
+type CreationTestResponse struct {
+	UUID string `json:"uuid"`
+}
+
 type ErrorTest struct {
 	Name   string
 	Method string
@@ -164,14 +174,11 @@ type ErrorTestResponse struct {
 	Error string `json:"error"`
 }
 
-type CreationTest struct {
-	Name string
-	Body io.Reader
-	Ref  *uuid.UUID
-}
-
-type CreationTestResponse struct {
-	UUID string `json:"uuid"`
+type CountTest struct {
+	Name   string
+	Target string
+	Auth   *users.User
+	Count  int
 }
 
 func (ts *RESTTestSuite) testRequest(tt RequestTest) {
@@ -208,6 +215,17 @@ func (ts *RESTTestSuite) testError(tt ErrorTest) {
 	})
 }
 
+func (ts *RESTTestSuite) testCount(tt CountTest) {
+	ts.Run(tt.Name, func() {
+		request := NewRequest("GET", tt.Target, nil).WithAuth(tt.Auth)
+		response := make([]map[string]string, 0)
+		code := ts.ServeJSON(request, &response)
+
+		ts.Equal(http.StatusOK, code)
+		ts.Len(response, tt.Count)
+	})
+}
+
 func (ts *RESTTestSuite) TestRest() {
 	ts.Run("Index", ts.testIndex)
 	ts.Run("Authorization", ts.testAuthorization)
@@ -228,6 +246,10 @@ func (ts *RESTTestSuite) TestRest() {
 		ts.Run("Accounts", ts.testDeleteAccounts)
 		ts.Run("Categories", ts.testDeleteCategories)
 		ts.Run("Transactions", ts.testDeleteTransactions)
+	})
+
+	ts.Run("Get", func() {
+		ts.Run("Accounts", ts.testGetAccounts)
 	})
 }
 
