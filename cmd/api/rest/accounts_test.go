@@ -146,4 +146,87 @@ func (ts *RESTTestSuite) testCreateAccounts() {
 	for _, tt := range tests {
 		ts.testCreate(tt, "/accounts")
 	}
+
+	ts.testSetAccountsAmounts()
+}
+
+func (ts *RESTTestSuite) testSetAccountsAmounts() {
+	tests := []RequestTest{
+		{
+			Name:   "cash 2009-12 USD",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2009-12",
+			Body:   bytes.NewBufferString(`{"currency":"USD","amount":1500}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "bank 2010-01 USD",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-01",
+			Body:   bytes.NewBufferString(`{"currency":"USD","amount":2000}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "cash 2010-01 USD",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-01",
+			Body:   bytes.NewBufferString(`{"currency":"USD","amount":500}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "cash 2010-01 EUR",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-01",
+			Body:   bytes.NewBufferString(`{"currency":"EUR","amount":500}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "cash 2010-02 USD",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-02",
+			Body:   bytes.NewBufferString(`{"currency":"USD","amount":1000}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "cash 2010-02 EUR",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-02",
+			Body:   bytes.NewBufferString(`{"currency":"EUR","amount":0}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "bank 2010-02 USD",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-02",
+			Body:   bytes.NewBufferString(`{"currency":"USD","amount":2200}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "bank 2010-02 EUR",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-02",
+			Body:   bytes.NewBufferString(`{"currency":"EUR","amount":500}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
+			Name:   "bank 2010-03 USD",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-03",
+			Body:   bytes.NewBufferString(`{"currency":"USD","amount":2500}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		ts.testRequest(tt)
+	}
 }

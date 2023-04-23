@@ -101,6 +101,12 @@ func (r *Request) WithAuth(user *users.User) *Request {
 	return r
 }
 
+func (ts *RESTTestSuite) Serve(request *Request) int {
+	rr := NewRecorder()
+	ts.handler.ServeHTTP(rr, request.Request)
+	return rr.Code
+}
+
 func (ts *RESTTestSuite) ServeJSON(request *Request, response any) int {
 	rr := NewRecorder()
 	ts.handler.ServeHTTP(rr, request.Request)
@@ -130,6 +136,15 @@ func (rr *ResponseRecorder) FromJSON(v any) {
 	}
 }
 
+type RequestTest struct {
+	Name   string
+	Method string
+	Target string
+	Body   io.Reader
+	Auth   *users.User
+	Code   int
+}
+
 type ErrorTest struct {
 	Name   string
 	Method string
@@ -152,6 +167,15 @@ type CreationTest struct {
 
 type CreationTestResponse struct {
 	UUID string `json:"uuid"`
+}
+
+func (ts *RESTTestSuite) testRequest(tt RequestTest) {
+	ts.Run(tt.Name, func() {
+		request := NewRequest(tt.Method, tt.Target, tt.Body).WithAuth(tt.Auth)
+		code := ts.Serve(request)
+
+		ts.Equal(tt.Code, code)
+	})
 }
 
 func (ts *RESTTestSuite) testCreate(tt CreationTest, target string) {
