@@ -217,6 +217,14 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Code:   http.StatusOK,
 		},
 		{
+			Name:   "temp 2010-02 USD",
+			Method: "PUT",
+			Target: "/accounts/" + ts.accounts.temp.String() + "/amounts/2010-02",
+			Body:   bytes.NewBufferString(`{"currency":"USD","amount":150}`),
+			Auth:   ts.users.main,
+			Code:   http.StatusOK,
+		},
+		{
 			Name:   "bank 2010-03 USD",
 			Method: "PUT",
 			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-03",
