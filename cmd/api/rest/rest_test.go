@@ -41,7 +41,12 @@ type RESTTestSuite struct {
 		temp uuid.UUID
 	}
 	categories struct {
-		income uuid.UUID
+		income    uuid.UUID
+		groceries uuid.UUID
+		temp      uuid.UUID
+	}
+	transactions struct {
+		temp uuid.UUID
 	}
 }
 
@@ -186,7 +191,9 @@ func (ts *RESTTestSuite) testCreate(tt CreationTest, target string) {
 
 		ts.Equal(http.StatusCreated, code)
 		ts.Require().NotEmptyf(response.UUID, "Received invalid UUID value in response")
-		*tt.Ref = uuid.Must(uuid.FromString(response.UUID))
+		if tt.Ref != nil {
+			*tt.Ref = uuid.Must(uuid.FromString(response.UUID))
+		}
 	})
 }
 
@@ -214,6 +221,7 @@ func (ts *RESTTestSuite) TestRest() {
 	ts.Run("Create", func() {
 		ts.Run("Accounts", ts.testCreateAccounts)
 		ts.Run("Categories", ts.testCreateCategories)
+		ts.Run("Transactions", ts.testCreateTransactions)
 	})
 }
 

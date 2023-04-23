@@ -69,12 +69,12 @@ func (ts *RESTTestSuite) testCreateCategories() {
 		{
 			Name: "groceries",
 			Body: bytes.NewBufferString(`{"name": "groceries"}`),
-			Ref:  &ts.categories.income,
+			Ref:  &ts.categories.groceries,
 		},
 		{
 			Name: "temp",
 			Body: bytes.NewBufferString(`{"name": "temp"}`),
-			Ref:  &ts.categories.income,
+			Ref:  &ts.categories.temp,
 		},
 	}
 

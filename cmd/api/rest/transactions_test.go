@@ -3,6 +3,7 @@ package rest_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"net/http"
@@ -101,5 +102,128 @@ func (ts *RESTTestSuite) testTransactions() {
 
 	for _, tt := range tests {
 		ts.testError(tt)
+	}
+}
+
+func (ts *RESTTestSuite) testCreateTransactions() {
+	tests := []CreationTest{
+		// 2009-12
+		{
+			Name: "2009-12 USD income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2009-12","currency": "USD","amount": 2000,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2009-12 USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2009-12","currency": "USD","amount": -100,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+		{
+			Name: "2009-12 USD temp",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2009-12","currency": "USD","amount": -50,"category_uuid": "%s"}`, ts.categories.temp)),
+			Ref:  nil,
+		},
+		{
+			Name: "2009-12 USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2009-12","currency": "USD","amount": -200,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+
+		// 2010-01
+		{
+			Name: "2010-01 USD income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-01","currency": "USD","amount": 2000,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-01 EUR income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-01","currency": "EUR","amount": 500,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-01 USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-01","currency": "USD","amount": -200,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-01 USD uncategorized",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-01","currency": "USD","amount": -200}`)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-01 USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-01","currency": "USD","amount": -150,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-01 temporary USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-01","currency": "USD","amount": -150,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  &ts.transactions.temp,
+		},
+
+		// 2010-02
+		{
+			Name: "2010-02 USD income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-02","currency": "USD","amount": 1000,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-02 USD income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-02","currency": "USD","amount": 500,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-02 EUR income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-02","currency": "EUR","amount": 300,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-02 EUR uncategorized",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-02","currency": "EUR","amount": -200}`)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-02 EUR groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-02","currency": "EUR","amount": -100,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-02 USD uncategorized",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-02","currency": "USD","amount": -300}`)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-02 USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-02","currency": "USD","amount": -250,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+
+		// 2010-03
+		{
+			Name: "2010-03 USD income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-03","currency": "USD","amount": 500,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-03 USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-03","currency": "USD","amount": -200,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+
+		// 2010-04
+		{
+			Name: "2010-04 USD income",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-04","currency": "USD","amount": 1000,"category_uuid": "%s"}`, ts.categories.income)),
+			Ref:  nil,
+		},
+		{
+			Name: "2010-04 USD groceries",
+			Body: bytes.NewBufferString(fmt.Sprintf(`{"month": "2010-04","currency": "USD","amount": -200,"category_uuid": "%s"}`, ts.categories.groceries)),
+			Ref:  nil,
+		},
+	}
+
+	for _, tt := range tests {
+		ts.testCreate(tt, "/transactions")
 	}
 }
