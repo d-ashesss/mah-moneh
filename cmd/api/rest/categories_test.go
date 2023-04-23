@@ -82,3 +82,15 @@ func (ts *RESTTestSuite) testCreateCategories() {
 		ts.testCreate(tt, "/categories")
 	}
 }
+
+func (ts *RESTTestSuite) testDeleteCategories() {
+	tt := RequestTest{
+		Name:   "delete category",
+		Method: "DELETE",
+		Target: "/categories/" + ts.categories.temp.String(),
+		Body:   nil,
+		Auth:   ts.users.main,
+		Code:   http.StatusOK,
+	}
+	ts.testRequest(tt)
+}

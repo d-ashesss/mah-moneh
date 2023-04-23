@@ -227,3 +227,15 @@ func (ts *RESTTestSuite) testCreateTransactions() {
 		ts.testCreate(tt, "/transactions")
 	}
 }
+
+func (ts *RESTTestSuite) testDeleteTransactions() {
+	tt := RequestTest{
+		Name:   "delete transaction",
+		Method: "DELETE",
+		Target: "/transactions/" + ts.transactions.temp.String(),
+		Body:   nil,
+		Auth:   ts.users.main,
+		Code:   http.StatusOK,
+	}
+	ts.testRequest(tt)
+}

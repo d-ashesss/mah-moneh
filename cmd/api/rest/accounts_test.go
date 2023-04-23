@@ -238,3 +238,15 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 		ts.testRequest(tt)
 	}
 }
+
+func (ts *RESTTestSuite) testDeleteAccounts() {
+	tt := RequestTest{
+		Name:   "delete account",
+		Method: "DELETE",
+		Target: "/accounts/" + ts.accounts.temp.String(),
+		Body:   nil,
+		Auth:   ts.users.main,
+		Code:   http.StatusOK,
+	}
+	ts.testRequest(tt)
+}

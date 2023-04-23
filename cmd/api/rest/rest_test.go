@@ -223,6 +223,12 @@ func (ts *RESTTestSuite) TestRest() {
 		ts.Run("Categories", ts.testCreateCategories)
 		ts.Run("Transactions", ts.testCreateTransactions)
 	})
+
+	ts.Run("Delete", func() {
+		ts.Run("Accounts", ts.testDeleteAccounts)
+		ts.Run("Categories", ts.testDeleteCategories)
+		ts.Run("Transactions", ts.testDeleteTransactions)
+	})
 }
 
 func (ts *RESTTestSuite) testIndex() {
