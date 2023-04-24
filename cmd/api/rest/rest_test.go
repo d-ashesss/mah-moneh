@@ -250,6 +250,7 @@ func (ts *RESTTestSuite) TestRest() {
 
 	ts.Run("Get", func() {
 		ts.Run("Accounts", ts.testGetAccounts)
+		ts.Run("Categories", ts.testGetCategories)
 	})
 }
 

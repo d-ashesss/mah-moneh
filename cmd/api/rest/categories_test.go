@@ -94,3 +94,25 @@ func (ts *RESTTestSuite) testDeleteCategories() {
 	}
 	ts.testRequest(tt)
 }
+
+func (ts *RESTTestSuite) testGetCategories() {
+	tests := []CountTest{
+		{
+			Name:   "get main categories",
+			Target: "/categories",
+			Auth:   ts.users.main,
+			Count:  2,
+		},
+		{
+			Name:   "get control categories",
+			Target: "/categories",
+			Auth:   ts.users.control,
+			Count:  0,
+		},
+	}
+	for _, tt := range tests {
+		ts.testCount(tt)
+	}
+
+	ts.testGetAccountAmounts()
+}
