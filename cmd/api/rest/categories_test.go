@@ -113,6 +113,4 @@ func (ts *RESTTestSuite) testGetCategories() {
 	for _, tt := range tests {
 		ts.testCount(tt)
 	}
-
-	ts.testGetAccountAmounts()
 }

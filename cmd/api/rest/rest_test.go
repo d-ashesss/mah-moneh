@@ -218,7 +218,7 @@ func (ts *RESTTestSuite) testError(tt ErrorTest) {
 func (ts *RESTTestSuite) testCount(tt CountTest) {
 	ts.Run(tt.Name, func() {
 		request := NewRequest("GET", tt.Target, nil).WithAuth(tt.Auth)
-		response := make([]map[string]string, 0)
+		response := make([]map[string]any, 0)
 		code := ts.ServeJSON(request, &response)
 
 		ts.Equal(http.StatusOK, code)
@@ -251,6 +251,7 @@ func (ts *RESTTestSuite) TestRest() {
 	ts.Run("Get", func() {
 		ts.Run("Accounts", ts.testGetAccounts)
 		ts.Run("Categories", ts.testGetCategories)
+		ts.Run("Transactions", ts.testGetTransactions)
 	})
 }
 

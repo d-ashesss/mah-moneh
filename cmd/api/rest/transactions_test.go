@@ -239,3 +239,60 @@ func (ts *RESTTestSuite) testDeleteTransactions() {
 	}
 	ts.testRequest(tt)
 }
+
+func (ts *RESTTestSuite) testGetTransactions() {
+	tests := []CountTest{
+		{
+			Name:   "get main 2009-11 transactions",
+			Target: "/transactions/2009-11",
+			Auth:   ts.users.main,
+			Count:  0,
+		},
+		{
+			Name:   "get main 2009-12 transactions",
+			Target: "/transactions/2009-12",
+			Auth:   ts.users.main,
+			Count:  4,
+		},
+		{
+			Name:   "get main 2010-01 transactions",
+			Target: "/transactions/2010-01",
+			Auth:   ts.users.main,
+			Count:  5,
+		},
+		{
+			Name:   "get main 2010-02 transactions",
+			Target: "/transactions/2010-02",
+			Auth:   ts.users.main,
+			Count:  7,
+		},
+		{
+			Name:   "get main 2010-03 transactions",
+			Target: "/transactions/2010-03",
+			Auth:   ts.users.main,
+			Count:  2,
+		},
+		{
+			Name:   "get main 2010-04 transactions",
+			Target: "/transactions/2010-04",
+			Auth:   ts.users.main,
+			Count:  2,
+		},
+		{
+			Name:   "get main 2010-05 transactions",
+			Target: "/transactions/2010-05",
+			Auth:   ts.users.main,
+			Count:  0,
+		},
+
+		{
+			Name:   "get control 2010-01 transactions",
+			Target: "/transactions/2010-01",
+			Auth:   ts.users.control,
+			Count:  0,
+		},
+	}
+	for _, tt := range tests {
+		ts.testCount(tt)
+	}
+}
