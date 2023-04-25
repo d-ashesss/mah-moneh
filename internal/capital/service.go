@@ -33,7 +33,7 @@ func (s *Service) GetCapital(ctx context.Context, u *users.User, month string) (
 		if err != nil {
 			return nil, err
 		}
-		c.Amounts = amounts
+		c.Amounts.Add(amounts)
 	}
 	return c, nil
 }

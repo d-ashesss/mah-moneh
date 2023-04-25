@@ -52,6 +52,13 @@ func NewCurrencyAmounts() CurrencyAmounts {
 	return make(CurrencyAmounts)
 }
 
+// Add adds provided amounts to current one.
+func (a CurrencyAmounts) Add(from CurrencyAmounts) {
+	for currency, amount := range from {
+		a[currency] += amount
+	}
+}
+
 // Diff gets the difference from provided amounts.
 func (a CurrencyAmounts) Diff(from CurrencyAmounts) CurrencyAmounts {
 	diff := NewCurrencyAmounts()
