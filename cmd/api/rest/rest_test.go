@@ -252,6 +252,7 @@ func (ts *RESTTestSuite) TestRest() {
 		ts.Run("Accounts", ts.testGetAccounts)
 		ts.Run("Categories", ts.testGetCategories)
 		ts.Run("Transactions", ts.testGetTransactions)
+		ts.Run("Spendings", ts.testGetSpendings)
 	})
 }
 
