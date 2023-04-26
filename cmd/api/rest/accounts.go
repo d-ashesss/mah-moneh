@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"net/http"
-	"time"
 )
 
 type CreateAccountInput struct {
@@ -42,16 +41,14 @@ func (h *handler) account(c *gin.Context) (*accounts.Account, error) {
 }
 
 type AccountResponse struct {
-	UUID      string `json:"uuid"`
-	CreatedAt string `json:"created_at"`
-	Name      string `json:"name"`
+	UUID string `json:"uuid"`
+	Name string `json:"name"`
 }
 
 func NewAccountResponse(acc *accounts.Account) *AccountResponse {
 	return &AccountResponse{
-		UUID:      acc.UUID.String(),
-		CreatedAt: acc.CreatedAt.Format(time.DateTime),
-		Name:      acc.Name,
+		UUID: acc.UUID.String(),
+		Name: acc.Name,
 	}
 }
 

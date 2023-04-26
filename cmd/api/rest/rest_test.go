@@ -107,38 +107,24 @@ func (r *Request) WithAuth(user *users.User) *Request {
 }
 
 func (ts *RESTTestSuite) Serve(request *Request) int {
-	rr := NewRecorder()
+	rr := httptest.NewRecorder()
 	ts.handler.ServeHTTP(rr, request.Request)
 	return rr.Code
 }
 
 func (ts *RESTTestSuite) ServeJSON(request *Request, response any) int {
-	rr := NewRecorder()
+	rr := httptest.NewRecorder()
 	ts.handler.ServeHTTP(rr, request.Request)
-	rr.FromJSON(response)
+	if err := json.Unmarshal(rr.Body.Bytes(), response); err != nil {
+		panic(err)
+	}
 	return rr.Code
 }
 
 func (ts *RESTTestSuite) ServeString(request *Request) (int, string) {
-	rr := NewRecorder()
+	rr := httptest.NewRecorder()
 	ts.handler.ServeHTTP(rr, request.Request)
 	return rr.Code, rr.Body.String()
-}
-
-type ResponseRecorder struct {
-	*httptest.ResponseRecorder
-}
-
-func NewRecorder() *ResponseRecorder {
-	return &ResponseRecorder{
-		ResponseRecorder: httptest.NewRecorder(),
-	}
-}
-
-func (rr *ResponseRecorder) FromJSON(v any) {
-	if err := json.Unmarshal(rr.Body.Bytes(), v); err != nil {
-		panic(err)
-	}
 }
 
 type RequestTest struct {
@@ -179,6 +165,13 @@ type CountTest struct {
 	Target string
 	Auth   *users.User
 	Count  int
+}
+
+type JSONTest struct {
+	Name     string
+	Target   string
+	Auth     *users.User
+	Expected string
 }
 
 func (ts *RESTTestSuite) testRequest(tt RequestTest) {
@@ -226,7 +219,17 @@ func (ts *RESTTestSuite) testCount(tt CountTest) {
 	})
 }
 
-func (ts *RESTTestSuite) TestRest() {
+func (ts *RESTTestSuite) testJSON(tt JSONTest) {
+	ts.Run(tt.Name, func() {
+		request := NewRequest("GET", tt.Target, nil).WithAuth(tt.Auth)
+		code, response := ts.ServeString(request)
+
+		ts.Equal(http.StatusOK, code)
+		ts.JSONEq(tt.Expected, response)
+	})
+}
+
+func (ts *RESTTestSuite) TestREST() {
 	ts.Run("Index", ts.testIndex)
 	ts.Run("Authorization", ts.testAuthorization)
 

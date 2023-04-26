@@ -5,6 +5,7 @@ package rest_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"net/http"
@@ -252,88 +253,89 @@ func (ts *RESTTestSuite) testDeleteAccounts() {
 }
 
 func (ts *RESTTestSuite) testGetAccounts() {
-	tests := []CountTest{
+	tests := []JSONTest{
 		{
 			Name:   "get main accounts",
 			Target: "/accounts",
 			Auth:   ts.users.main,
-			Count:  2,
+			Expected: fmt.Sprintf(`[
+				{"uuid": "%s", "name": "bank"},
+				{"uuid": "%s", "name": "cash"}
+			]`, ts.accounts.bank, ts.accounts.cash),
 		},
 		{
-			Name:   "get control accounts",
-			Target: "/accounts",
-			Auth:   ts.users.control,
-			Count:  0,
+			Name:     "get control accounts",
+			Target:   "/accounts",
+			Auth:     ts.users.control,
+			Expected: `[]`,
 		},
 	}
 	for _, tt := range tests {
-		ts.testCount(tt)
+		ts.testJSON(tt)
 	}
 
 	ts.testGetAccountAmounts()
 }
 
 func (ts *RESTTestSuite) testGetAccountAmounts() {
-	tests := []struct {
-		Name    string
-		Target  string
-		Amounts map[string]float64
-	}{
+	tests := []JSONTest{
 		{
-			Name:    "get bank amounts 2009-12",
-			Target:  "/accounts/" + ts.accounts.bank.String() + "/amounts/2009-12",
-			Amounts: map[string]float64{},
+			Name:     "get bank amounts 2009-12",
+			Target:   "/accounts/" + ts.accounts.bank.String() + "/amounts/2009-12",
+			Auth:     ts.users.main,
+			Expected: `{}`,
 		},
 		{
-			Name:    "get bank amounts 2010-01",
-			Target:  "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-01",
-			Amounts: map[string]float64{"USD": 2000},
+			Name:     "get bank amounts 2010-01",
+			Target:   "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-01",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 2000}`,
 		},
 		{
-			Name:    "get bank amounts 2010-02",
-			Target:  "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-02",
-			Amounts: map[string]float64{"USD": 2200, "EUR": 500},
+			Name:     "get bank amounts 2010-02",
+			Target:   "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-02",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 2200, "EUR": 500}`,
 		},
 		{
-			Name:    "get bank amounts 2010-03",
-			Target:  "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-03",
-			Amounts: map[string]float64{"USD": 2500, "EUR": 500},
+			Name:     "get bank amounts 2010-03",
+			Target:   "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-03",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 2500, "EUR": 500}`,
 		},
 		{
-			Name:    "get bank amounts 2010-04",
-			Target:  "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-04",
-			Amounts: map[string]float64{"USD": 2500, "EUR": 500},
+			Name:     "get bank amounts 2010-04",
+			Target:   "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-04",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 2500, "EUR": 500}`,
 		},
 
 		{
-			Name:    "get cash amounts 2009-12",
-			Target:  "/accounts/" + ts.accounts.cash.String() + "/amounts/2009-12",
-			Amounts: map[string]float64{"USD": 1500},
+			Name:     "get cash amounts 2009-12",
+			Target:   "/accounts/" + ts.accounts.cash.String() + "/amounts/2009-12",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 1500}`,
 		},
 		{
-			Name:    "get cash amounts 2010-01",
-			Target:  "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-01",
-			Amounts: map[string]float64{"USD": 500, "EUR": 500},
+			Name:     "get cash amounts 2010-01",
+			Target:   "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-01",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 500, "EUR": 500}`,
 		},
 		{
-			Name:    "get cash amounts 2010-02",
-			Target:  "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-02",
-			Amounts: map[string]float64{"USD": 1000, "EUR": 0},
+			Name:     "get cash amounts 2010-02",
+			Target:   "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-02",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 1000, "EUR": 0}`,
 		},
 		{
-			Name:    "get cash amounts 2010-03",
-			Target:  "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-03",
-			Amounts: map[string]float64{"USD": 1000, "EUR": 0},
+			Name:     "get cash amounts 2010-03",
+			Target:   "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-03",
+			Auth:     ts.users.main,
+			Expected: `{"USD": 1000, "EUR": 0}`,
 		},
 	}
 	for _, tt := range tests {
-		ts.Run(tt.Name, func() {
-			request := NewRequest("GET", tt.Target, nil).WithAuth(ts.users.main)
-			response := make(map[string]float64)
-			code := ts.ServeJSON(request, &response)
-
-			ts.Equal(http.StatusOK, code)
-			ts.Equal(tt.Amounts, response)
-		})
+		ts.testJSON(tt)
 	}
 }

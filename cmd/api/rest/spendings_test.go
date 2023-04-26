@@ -2,130 +2,99 @@
 
 package rest_test
 
-import (
-	"github.com/d-ashesss/mah-moneh/internal/users"
-	"net/http"
-)
+import "fmt"
 
 func (ts *RESTTestSuite) testGetSpendings() {
-	tests := []struct {
-		Name     string
-		Target   string
-		Auth     *users.User
-		Expected map[string]map[string]float64
-	}{
+	tests := []JSONTest{
 		{
 			Name:   "get main 2009-11 spendings",
 			Target: "/spendings/2009-11",
 			Auth:   ts.users.main,
-			Expected: map[string]map[string]float64{
-				ts.categories.income.String():    {},
-				ts.categories.groceries.String(): {},
-				"uncategorized":                  {},
-				"unaccounted":                    {},
-			},
+			Expected: fmt.Sprintf(`{
+				"%s":            {},
+				"%s":            {},
+				"uncategorized": {},
+				"unaccounted":   {}
+			}`, ts.categories.income, ts.categories.groceries),
 		},
 		{
 			Name:   "get main 2009-12 spendings",
 			Target: "/spendings/2009-12",
 			Auth:   ts.users.main,
-			Expected: map[string]map[string]float64{
-				ts.categories.income.String():    {"USD": 2000},
-				ts.categories.groceries.String(): {"USD": -300},
-				"uncategorized":                  {"USD": -50},
-				"unaccounted":                    {"USD": -150},
-			},
+			Expected: fmt.Sprintf(`{
+				"%s":            {"USD": 2000},
+				"%s":            {"USD": -300},
+				"uncategorized": {"USD": -50},
+				"unaccounted":   {"USD": -150}
+			}`, ts.categories.income, ts.categories.groceries),
 		},
 		{
 			Name:   "get main 2010-01 spendings",
 			Target: "/spendings/2010-01",
 			Auth:   ts.users.main,
-			Expected: map[string]map[string]float64{
-				ts.categories.income.String(): {
-					"USD": 2000,
-					"EUR": 500,
-				},
-				ts.categories.groceries.String(): {"USD": -350},
-				"uncategorized":                  {"USD": -200},
-				"unaccounted":                    {"USD": -450},
-			},
+			Expected: fmt.Sprintf(`{
+				"%s":            {"USD": 2000, "EUR": 500},
+				"%s":            {"USD": -350},
+				"uncategorized": {"USD": -200},
+				"unaccounted":   {"USD": -450}
+			}`, ts.categories.income, ts.categories.groceries),
 		},
 		{
 			Name:   "get main 2010-02 spendings",
 			Target: "/spendings/2010-02",
 			Auth:   ts.users.main,
-			Expected: map[string]map[string]float64{
-				ts.categories.income.String(): {
-					"USD": 1500,
-					"EUR": 300,
-				},
-				ts.categories.groceries.String(): {
-					"USD": -250,
-					"EUR": -100,
-				},
-				"uncategorized": {
-					"USD": -300,
-					"EUR": -200,
-				},
-				"unaccounted": {"USD": -250},
-			},
+			Expected: fmt.Sprintf(`{
+				"%s":            {"USD": 1500, "EUR": 300},
+				"%s":            {"USD": -250, "EUR": -100},
+				"uncategorized": {"USD": -300, "EUR": -200},
+				"unaccounted":   {"USD": -250}
+			}`, ts.categories.income, ts.categories.groceries),
 		},
 		{
 			Name:   "get main 2010-03 spendings",
 			Target: "/spendings/2010-03",
 			Auth:   ts.users.main,
-			Expected: map[string]map[string]float64{
-				ts.categories.income.String(): {
-					"USD": 500,
-				},
-				ts.categories.groceries.String(): {
-					"USD": -200,
-				},
+			Expected: fmt.Sprintf(`{
+				"%s":            {"USD": 500},
+				"%s":            {"USD": -200},
 				"uncategorized": {},
-				"unaccounted":   {},
-			},
+				"unaccounted":   {}
+			}`, ts.categories.income, ts.categories.groceries),
 		},
 		{
 			Name:   "get main 2010-04 spendings",
 			Target: "/spendings/2010-04",
 			Auth:   ts.users.main,
-			Expected: map[string]map[string]float64{
-				ts.categories.income.String():    {"USD": 1000},
-				ts.categories.groceries.String(): {"USD": -200},
-				"uncategorized":                  {},
-				"unaccounted":                    {"USD": -800},
-			},
+			Expected: fmt.Sprintf(`{
+				"%s":            {"USD": 1000},
+				"%s":            {"USD": -200},
+				"uncategorized": {},
+				"unaccounted":   {"USD": -800}
+			}`, ts.categories.income, ts.categories.groceries),
 		},
 		{
 			Name:   "get main 2010-05 spendings",
 			Target: "/spendings/2010-05",
 			Auth:   ts.users.main,
-			Expected: map[string]map[string]float64{
-				ts.categories.income.String():    {},
-				ts.categories.groceries.String(): {},
-				"uncategorized":                  {},
-				"unaccounted":                    {},
-			},
+			Expected: fmt.Sprintf(`{
+				"%s":            {},
+				"%s":            {},
+				"uncategorized": {},
+				"unaccounted":   {}
+			}`, ts.categories.income, ts.categories.groceries),
 		},
 
 		{
 			Name:   "get control 2009-11 spendings",
 			Target: "/spendings/2009-11",
 			Auth:   ts.users.control,
-			Expected: map[string]map[string]float64{
+			Expected: `{
 				"uncategorized": {},
-				"unaccounted":   {},
-			},
+				"unaccounted":   {}
+			}`,
 		},
 	}
 	for _, tt := range tests {
-		ts.Run(tt.Name, func() {
-			request := NewRequest("GET", tt.Target, nil).WithAuth(tt.Auth)
-			response := make(map[string]map[string]float64)
-			code := ts.ServeJSON(request, &response)
-
-			ts.Equal(http.StatusOK, code)
-			ts.Equal(tt.Expected, response)
-		})
+		ts.testJSON(tt)
 	}
 }
