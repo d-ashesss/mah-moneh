@@ -16,6 +16,7 @@ import (
 )
 
 type handler struct {
+	users        *users.Service
 	accounts     *accounts.Service
 	categories   *categories.Service
 	transactions *transactions.Service
@@ -23,12 +24,14 @@ type handler struct {
 }
 
 func NewHandler(
+	users *users.Service,
 	accounts *accounts.Service,
 	categories *categories.Service,
 	transactions *transactions.Service,
 	spendings *spendings.Service,
 ) http.Handler {
 	h := &handler{
+		users:        users,
 		accounts:     accounts,
 		categories:   categories,
 		transactions: transactions,
@@ -86,7 +89,7 @@ func (h *handler) authenticate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, NewErrorResponse(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	user := &users.User{UUID: UUID}
+	user := h.users.GetUser(c, UUID)
 	c.Set("user", user)
 	c.Next()
 }

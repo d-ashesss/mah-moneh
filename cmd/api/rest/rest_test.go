@@ -63,6 +63,7 @@ func (ts *RESTTestSuite) SetupSuite() {
 		log.Fatalf("Failed to connect to the DB: %s", err)
 	}
 
+	usersService := users.NewService()
 	accountsStore := accounts.NewGormStore(db)
 	ts.accountsService = accounts.NewService(accountsStore)
 	categoriesStore := categories.NewGormStore(db)
@@ -81,7 +82,13 @@ func (ts *RESTTestSuite) SetupSuite() {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
-	ts.handler = rest.NewHandler(ts.accountsService, ts.categoriesService, ts.transactionsService, spendingsService)
+	ts.handler = rest.NewHandler(
+		usersService,
+		ts.accountsService,
+		ts.categoriesService,
+		ts.transactionsService,
+		spendingsService,
+	)
 
 	ts.users.main = &users.User{UUID: uuid.Must(uuid.NewV4())}
 	ts.users.control = &users.User{UUID: uuid.Must(uuid.NewV4())}

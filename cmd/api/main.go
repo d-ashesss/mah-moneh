@@ -8,6 +8,7 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
 	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
+	"github.com/d-ashesss/mah-moneh/internal/users"
 	"log"
 )
 
@@ -23,6 +24,7 @@ func main() {
 		log.Fatalf("Failed to connect to the DB: %s", err)
 	}
 
+	usersService := users.NewService()
 	accountsStore := accounts.NewGormStore(db)
 	accountsService := accounts.NewService(accountsStore)
 	categoriesStore := categories.NewGormStore(db)
@@ -41,7 +43,13 @@ func main() {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
-	handler := rest.NewHandler(accountsService, categoriesService, transactionsService, spendingsService)
+	handler := rest.NewHandler(
+		usersService,
+		accountsService,
+		categoriesService,
+		transactionsService,
+		spendingsService,
+	)
 
 	appCfg := NewConfig()
 	app := NewApp(appCfg, handler)
