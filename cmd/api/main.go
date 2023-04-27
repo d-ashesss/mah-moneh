@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/d-ashesss/mah-moneh/cmd/api/rest"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
+	"github.com/d-ashesss/mah-moneh/internal/auth"
 	"github.com/d-ashesss/mah-moneh/internal/capital"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
@@ -24,7 +25,9 @@ func main() {
 		log.Fatalf("Failed to connect to the DB: %s", err)
 	}
 
+	authCfg := auth.NewConfig()
 	usersService := users.NewService()
+	authService := auth.NewService(authCfg, usersService)
 	accountsStore := accounts.NewGormStore(db)
 	accountsService := accounts.NewService(accountsStore)
 	categoriesStore := categories.NewGormStore(db)
@@ -44,7 +47,7 @@ func main() {
 	}
 
 	handler := rest.NewHandler(
-		usersService,
+		authService,
 		accountsService,
 		categoriesService,
 		transactionsService,

@@ -6,16 +6,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"net/http"
 )
 
 func (ts *RESTTestSuite) testAccountsErrors() {
-	user1 := &users.User{UUID: uuid.Must(uuid.NewV4())}
-	user2 := &users.User{UUID: uuid.Must(uuid.NewV4())}
+	auth1 := ts.NewAuth()
+	auth2 := ts.NewAuth()
 
-	user1account, err := ts.accountsService.CreateAccount(context.Background(), user1, "test account")
+	user1account, err := ts.accountsService.CreateAccount(context.Background(), auth1.user, "test account")
 	ts.Require().NoErrorf(err, "Failed to create test account")
 
 	tests := []ErrorTest{
@@ -23,7 +22,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "create/invalid name",
 			Method: "POST",
 			Target: "/accounts",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString("{}"),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'Name'",
@@ -32,7 +31,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "update/invalid id",
 			Method: "PUT",
 			Target: "/accounts/wallet",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString("{}"),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'UUID'",
@@ -41,7 +40,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "update/id not exists",
 			Method: "PUT",
 			Target: "/accounts/" + uuid.Must(uuid.NewV4()).String(),
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString("{}"),
 			Code:   http.StatusNotFound,
 			Error:  "Not found",
@@ -50,7 +49,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "update/not owner",
 			Method: "PUT",
 			Target: "/accounts/" + user1account.UUID.String(),
-			Auth:   user2,
+			Auth:   auth2,
 			Body:   bytes.NewBufferString("{}"),
 			Code:   http.StatusNotFound,
 			Error:  "Not found",
@@ -59,7 +58,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "delete/invalid id",
 			Method: "DELETE",
 			Target: "/accounts/wallet",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   nil,
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'UUID'",
@@ -68,7 +67,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "delete/id not exists",
 			Method: "DELETE",
 			Target: "/accounts/" + uuid.Must(uuid.NewV4()).String(),
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   nil,
 			Code:   http.StatusNotFound,
 			Error:  "Not found",
@@ -77,7 +76,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "delete/not owner",
 			Method: "DELETE",
 			Target: "/accounts/" + user1account.UUID.String(),
-			Auth:   user2,
+			Auth:   auth2,
 			Body:   nil,
 			Code:   http.StatusNotFound,
 			Error:  "Not found",
@@ -86,7 +85,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "set amount/invalid month",
 			Method: "PUT",
 			Target: "/accounts/" + user1account.UUID.String() + "/amounts/201001",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString("{}"),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'Month'",
@@ -95,7 +94,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "set amount/invalid currency",
 			Method: "PUT",
 			Target: "/accounts/" + user1account.UUID.String() + "/amounts/2010-01",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString("{}"),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'Currency'",
@@ -104,7 +103,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "set amount/invalid amount data type",
 			Method: "PUT",
 			Target: "/accounts/" + user1account.UUID.String() + "/amounts/2010-01",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString(`{"currency": "USD", "amount": "100"}`),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid request input",
@@ -113,7 +112,7 @@ func (ts *RESTTestSuite) testAccountsErrors() {
 			Name:   "get amount/not owner",
 			Method: "GET",
 			Target: "/accounts/" + user1account.UUID.String() + "/amounts/2010-01",
-			Auth:   user2,
+			Auth:   auth2,
 			Body:   nil,
 			Code:   http.StatusNotFound,
 			Error:  "Not found",

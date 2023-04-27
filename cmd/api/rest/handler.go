@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
+	"github.com/d-ashesss/mah-moneh/internal/auth"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
@@ -9,14 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"github.com/gofrs/uuid"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
 type handler struct {
-	users        *users.Service
+	auth         *auth.Service
 	accounts     *accounts.Service
 	categories   *categories.Service
 	transactions *transactions.Service
@@ -24,14 +25,14 @@ type handler struct {
 }
 
 func NewHandler(
-	users *users.Service,
+	auth *auth.Service,
 	accounts *accounts.Service,
 	categories *categories.Service,
 	transactions *transactions.Service,
 	spendings *spendings.Service,
 ) http.Handler {
 	h := &handler{
-		users:        users,
+		auth:         auth,
 		accounts:     accounts,
 		categories:   categories,
 		transactions: transactions,
@@ -78,18 +79,15 @@ func (h *handler) handleIndex(c *gin.Context) {
 }
 
 func (h *handler) authenticate(c *gin.Context) {
-	auth := c.GetHeader("Authorization")
-	uid, _ := strings.CutPrefix(auth, "Bearer ")
-	if uid == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, NewErrorResponse(http.StatusText(http.StatusUnauthorized)))
-		return
-	}
-	UUID, err := uuid.FromString(uid)
+	token := c.GetHeader("Authorization")
+	token, _ = strings.CutPrefix(token, "Bearer ")
+
+	user, err := h.auth.AuthenticateUser(c, token)
 	if err != nil {
+		log.Printf("[HTTP] Unauthorized request: %s", err)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, NewErrorResponse(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	user := h.users.GetUser(c, UUID)
 	c.Set("user", user)
 	c.Next()
 }

@@ -6,16 +6,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gofrs/uuid"
 	"net/http"
 )
 
 func (ts *RESTTestSuite) testTransactions() {
-	user1 := &users.User{UUID: uuid.Must(uuid.NewV4())}
-	user2 := &users.User{UUID: uuid.Must(uuid.NewV4())}
+	auth1 := ts.NewAuth()
+	auth2 := ts.NewAuth()
 
-	user1transaction, err := ts.transactionsService.CreateTransaction(context.Background(), user1, "2010-01", "USD", 100, "", nil)
+	user1transaction, err := ts.transactionsService.CreateTransaction(context.Background(), auth1.user, "2010-01", "USD", 100, "", nil)
 	ts.Require().NoErrorf(err, "Failed to create test transaction")
 
 	tests := []ErrorTest{
@@ -23,7 +22,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "create transaction/invalid month",
 			Method: "POST",
 			Target: "/transactions",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString(`{"month": "201001"}`),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'Month'",
@@ -32,7 +31,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "create transaction/invalid currency",
 			Method: "POST",
 			Target: "/transactions",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString(`{"month": "2010-01"}`),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'Currency'",
@@ -41,7 +40,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "create transaction/invalid amount",
 			Method: "POST",
 			Target: "/transactions",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString(`{"month": "2010-01", "currency": "USD"}`),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'Amount'",
@@ -50,7 +49,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "create transaction/invalid amount data type",
 			Method: "POST",
 			Target: "/transactions",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString(`{"month": "2010-01", "currency": "USD", "amount": "100"}`),
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid request input",
@@ -59,7 +58,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "create transaction/invalid category",
 			Method: "POST",
 			Target: "/transactions",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   bytes.NewBufferString(`{"month": "2010-01", "currency": "USD", "amount": 100, "category_uuid": "outsource"}`),
 			Code:   http.StatusNotFound,
 			Error:  "Not found",
@@ -68,7 +67,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "get transactions/invalid month",
 			Method: "GET",
 			Target: "/transactions/201001",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   nil,
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'Month'",
@@ -77,7 +76,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "delete transaction/invalid id",
 			Method: "DELETE",
 			Target: "/transactions/cookies",
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   nil,
 			Code:   http.StatusBadRequest,
 			Error:  "Invalid value of 'UUID'",
@@ -86,7 +85,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "delete transaction/id not exists",
 			Method: "DELETE",
 			Target: "/transactions/" + uuid.Must(uuid.NewV4()).String(),
-			Auth:   user1,
+			Auth:   auth1,
 			Body:   nil,
 			Code:   http.StatusNotFound,
 			Error:  "Not found",
@@ -95,7 +94,7 @@ func (ts *RESTTestSuite) testTransactions() {
 			Name:   "delete transaction/not owner",
 			Method: "DELETE",
 			Target: "/transactions/" + user1transaction.UUID.String(),
-			Auth:   user2,
+			Auth:   auth2,
 			Body:   nil,
 			Code:   http.StatusNotFound,
 			Error:  "Not found",

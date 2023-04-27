@@ -3,9 +3,14 @@
 package rest_test
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"github.com/d-ashesss/mah-moneh/cmd/api/rest"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
+	"github.com/d-ashesss/mah-moneh/internal/auth"
 	"github.com/d-ashesss/mah-moneh/internal/capital"
 	"github.com/d-ashesss/mah-moneh/internal/categories"
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
@@ -14,16 +19,21 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/suite"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
 type RESTTestSuite struct {
 	suite.Suite
+
+	privKey *rsa.PrivateKey
+	pubKey  []byte
 
 	accountsService     *accounts.Service
 	categoriesService   *categories.Service
@@ -32,8 +42,8 @@ type RESTTestSuite struct {
 	handler http.Handler
 
 	users struct {
-		main    *users.User
-		control *users.User
+		main    Auth
+		control Auth
 	}
 	accounts struct {
 		bank uuid.UUID
@@ -63,7 +73,24 @@ func (ts *RESTTestSuite) SetupSuite() {
 		log.Fatalf("Failed to connect to the DB: %s", err)
 	}
 
+	privKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		log.Fatalf("Failed to generate private key: %s", err)
+	}
+	ts.privKey = privKey
+	der, err := x509.MarshalPKIXPublicKey(privKey.Public())
+	if err != nil {
+		log.Fatalf("Failed to marshal public key: %s", err)
+	}
+	ts.pubKey = pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: der})
+	err = os.Setenv("PUBLIC_KEY", string(ts.pubKey))
+	if err != nil {
+		log.Fatalf("Failed to set PUBLIC_KEY env variable: %s", err)
+	}
+
+	authCfg := auth.NewConfig()
 	usersService := users.NewService()
+	authService := auth.NewService(authCfg, usersService)
 	accountsStore := accounts.NewGormStore(db)
 	ts.accountsService = accounts.NewService(accountsStore)
 	categoriesStore := categories.NewGormStore(db)
@@ -83,15 +110,35 @@ func (ts *RESTTestSuite) SetupSuite() {
 	}
 
 	ts.handler = rest.NewHandler(
-		usersService,
+		authService,
 		ts.accountsService,
 		ts.categoriesService,
 		ts.transactionsService,
 		spendingsService,
 	)
 
-	ts.users.main = &users.User{UUID: uuid.Must(uuid.NewV4())}
-	ts.users.control = &users.User{UUID: uuid.Must(uuid.NewV4())}
+	ts.users.main = ts.NewAuth()
+	ts.users.control = ts.NewAuth()
+}
+
+type Auth struct {
+	UUID  uuid.UUID
+	user  *users.User
+	token string
+}
+
+func (ts *RESTTestSuite) NewAuth() Auth {
+	UUID := uuid.Must(uuid.NewV4())
+	t := jwt.NewWithClaims(jwt.SigningMethodRS256, &jwt.RegisteredClaims{Subject: UUID.String()})
+	token, err := t.SignedString(ts.privKey)
+	if err != nil {
+		panic(err)
+	}
+	return Auth{
+		UUID:  UUID,
+		user:  &users.User{UUID: UUID},
+		token: token,
+	}
 }
 
 type Request struct {
@@ -108,8 +155,8 @@ func NewRequest(method, target string, body io.Reader) *Request {
 	return r
 }
 
-func (r *Request) WithAuth(user *users.User) *Request {
-	r.Header.Add("Authorization", "Bearer "+user.UUID.String())
+func (r *Request) WithAuth(a Auth) *Request {
+	r.Header.Add("Authorization", "Bearer "+a.token)
 	return r
 }
 
@@ -139,7 +186,7 @@ type RequestTest struct {
 	Method string
 	Target string
 	Body   io.Reader
-	Auth   *users.User
+	Auth   Auth
 	Code   int
 }
 
@@ -157,7 +204,7 @@ type ErrorTest struct {
 	Name   string
 	Method string
 	Target string
-	Auth   *users.User
+	Auth   Auth
 	Body   io.Reader
 	Code   int
 	Error  string
@@ -170,14 +217,14 @@ type ErrorTestResponse struct {
 type CountTest struct {
 	Name   string
 	Target string
-	Auth   *users.User
+	Auth   Auth
 	Count  int
 }
 
 type JSONTest struct {
 	Name     string
 	Target   string
-	Auth     *users.User
+	Auth     Auth
 	Expected string
 }
 
@@ -285,8 +332,7 @@ func (ts *RESTTestSuite) testAuthorization() {
 	})
 
 	ts.Run("Authorized", func() {
-		auth := &users.User{UUID: uuid.Must(uuid.NewV4())}
-		request := NewRequest("GET", "/deep-vaults", nil).WithAuth(auth)
+		request := NewRequest("GET", "/deep-vaults", nil).WithAuth(ts.NewAuth())
 		code, response := ts.ServeString(request)
 
 		ts.Equal(http.StatusOK, code)
