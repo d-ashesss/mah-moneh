@@ -14,9 +14,9 @@ jobs:
       postgres:
         image: "postgres:14-alpine"
         env:
-          POSTGRES_USER: test
           POSTGRES_PASSWORD: mah-password
-          POSTGRES_DB: test
+        ports:
+          - 5432:5432
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -36,8 +36,8 @@ jobs:
     - name: Test
       run: go test -tags=integration -v ./...
       env:
-        DB_HOST: postgres
+        DB_HOST: localhost
         DB_PORT: 5432
-        DB_USER: test
+        DB_USER: postgres
         DB_PASSWORD: mah-password
-        DB_NAME: test
+        DB_NAME: postgres
