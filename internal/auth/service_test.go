@@ -102,6 +102,7 @@ func (ts *AuthServiceTestSuite) TestAuthenticateUser_Valid_UserFound() {
 	ts.Require().NoError(err)
 
 	user, err := ts.srv.AuthenticateUser(ctx, token)
+	ts.Require().NoError(err)
 	ts.Equal(userUUID, user.UUID)
 }
 
