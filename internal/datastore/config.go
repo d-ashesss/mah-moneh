@@ -7,10 +7,10 @@ import (
 
 type Config struct {
 	Host     string `env:"DB_HOST,default=localhost"`
-	Port     string `env:"DB_PORT"`
-	User     string `env:"DB_USER"`
+	Port     string `env:"DB_PORT,default=5432"`
+	User     string `env:"DB_USER,default=postgres"`
 	Password string `env:"DB_PASSWORD"`
-	Name     string `env:"DB_NAME,required"`
+	Name     string `env:"DB_NAME,default=postgres"`
 
 	Debug bool `env:"DB_DEBUG,default=false"`
 
