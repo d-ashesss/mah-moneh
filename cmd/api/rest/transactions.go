@@ -15,7 +15,7 @@ type CreateTransactionInput struct {
 	Currency     accounts.Currency `json:"currency" binding:"required"`
 	Amount       float64           `json:"amount" binding:"required"`
 	Description  string            `json:"description"`
-	CategoryUUID string            `json:"category_uuid"`
+	CategoryUUID *string           `json:"category_uuid"`
 }
 
 func (i *CreateTransactionInput) Bind(c *gin.Context) error {
@@ -39,8 +39,8 @@ func (i *GetMonthTransactionsInput) Bind(c *gin.Context) error {
 }
 
 func (h *handler) transactionCategory(c *gin.Context, i CreateTransactionInput) (*categories.Category, error) {
-	if i.CategoryUUID != "" {
-		return h.categories.GetCategory(c, uuid.FromStringOrNil(i.CategoryUUID))
+	if i.CategoryUUID != nil {
+		return h.categories.GetCategory(c, uuid.FromStringOrNil(*i.CategoryUUID))
 	}
 	return nil, nil
 }
