@@ -3,7 +3,7 @@ package auth
 import "github.com/joeshaw/envdecode"
 
 type Config struct {
-	PublicKey string `env:"PUBLIC_KEY"`
+	OpenIDConfigurationUrl string `env:"AUTH_OPENID_CONFIGURATION_URL"`
 }
 
 func NewConfig() *Config {

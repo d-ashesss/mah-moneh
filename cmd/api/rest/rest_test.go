@@ -5,9 +5,7 @@ package rest_test
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"github.com/d-ashesss/mah-moneh/cmd/api/rest"
 	"github.com/d-ashesss/mah-moneh/internal/accounts"
 	"github.com/d-ashesss/mah-moneh/internal/auth"
@@ -19,21 +17,23 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/stretchr/testify/suite"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 )
+
+const TestKeyID = "test_key"
 
 type RESTTestSuite struct {
 	suite.Suite
 
-	privKey *rsa.PrivateKey
-	pubKey  []byte
+	privKey jwk.Key
 
 	accountsService     *accounts.Service
 	categoriesService   *categories.Service
@@ -73,24 +73,40 @@ func (ts *RESTTestSuite) SetupSuite() {
 		log.Fatalf("Failed to connect to the DB: %s", err)
 	}
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	rsaKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		log.Fatalf("Failed to generate private key: %s", err)
 	}
-	ts.privKey = privKey
-	der, err := x509.MarshalPKIXPublicKey(privKey.Public())
+
+	privKey, err := jwk.FromRaw(rsaKey)
 	if err != nil {
-		log.Fatalf("Failed to marshal public key: %s", err)
+		log.Fatalf("Failed to create public key: %s", err)
 	}
-	ts.pubKey = pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: der})
-	err = os.Setenv("PUBLIC_KEY", string(ts.pubKey))
+	if err := privKey.Set(jwk.KeyIDKey, TestKeyID); err != nil {
+		log.Fatalf("Failed to set key ID: %s", err)
+	}
+	if err := privKey.Set(jwk.AlgorithmKey, jwa.RS256); err != nil {
+		log.Fatalf("Failed to set key ID: %s", err)
+	}
+	ts.privKey = privKey
+
+	pubKey, err := jwk.FromRaw(rsaKey.Public())
 	if err != nil {
-		log.Fatalf("Failed to set PUBLIC_KEY env variable: %s", err)
+		log.Fatalf("Failed to create public key: %s", err)
+	}
+	if err := pubKey.Set(jwk.KeyIDKey, TestKeyID); err != nil {
+		log.Fatalf("Failed to set key ID: %s", err)
+	}
+	if err := pubKey.Set(jwk.AlgorithmKey, jwa.RS256); err != nil {
+		log.Fatalf("Failed to set key ID: %s", err)
 	}
 
 	authCfg := auth.NewConfig()
 	usersService := users.NewService()
 	authService := auth.NewService(authCfg, usersService)
+	if err := authService.AddKey(pubKey); err != nil {
+		log.Fatalf("Failed to add test public key: %s", err)
+	}
 	accountsStore := accounts.NewGormStore(db)
 	ts.accountsService = accounts.NewService(accountsStore)
 	categoriesStore := categories.NewGormStore(db)
@@ -129,15 +145,18 @@ type Auth struct {
 
 func (ts *RESTTestSuite) NewAuth() Auth {
 	UUID := uuid.Must(uuid.NewV4())
-	t := jwt.NewWithClaims(jwt.SigningMethodRS256, &jwt.RegisteredClaims{Subject: UUID.String()})
-	token, err := t.SignedString(ts.privKey)
+	t := jwt.New()
+	if err := t.Set(jwt.SubjectKey, UUID.String()); err != nil {
+		panic(err)
+	}
+	token, err := jwt.Sign(t, jwt.WithKey(ts.privKey.Algorithm(), ts.privKey))
 	if err != nil {
 		panic(err)
 	}
 	return Auth{
 		UUID:  UUID,
 		user:  &users.User{UUID: UUID},
-		token: token,
+		token: string(token),
 	}
 }
 
