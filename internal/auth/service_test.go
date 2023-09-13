@@ -90,10 +90,10 @@ func (ts *AuthServiceTestSuite) TestAuthenticateUser_UnsignedToken() {
 
 func (ts *AuthServiceTestSuite) TestAuthenticateUser_ExpiredToken() {
 	ctx := context.Background()
-	userUUID := uuid.Must(uuid.NewV4())
+	userID := uuid.Must(uuid.NewV4()).String()
 
 	tt := jwt.New()
-	err := tt.Set(jwt.SubjectKey, userUUID.String())
+	err := tt.Set(jwt.SubjectKey, userID)
 	ts.Require().NoError(err)
 	err = tt.Set(jwt.ExpirationKey, time.Now().Add(-10*time.Second))
 	ts.Require().NoError(err)
@@ -107,11 +107,11 @@ func (ts *AuthServiceTestSuite) TestAuthenticateUser_ExpiredToken() {
 
 func (ts *AuthServiceTestSuite) TestAuthenticateUser_Valid_UserNotFound() {
 	ctx := context.Background()
-	userUUID := uuid.Must(uuid.NewV4())
-	ts.users.On("GetUser", ctx, userUUID).Return(nil, errors.New("test error"))
+	userID := uuid.Must(uuid.NewV4()).String()
+	ts.users.On("GetUser", ctx, userID).Return(nil, errors.New("test error"))
 
 	tt := jwt.New()
-	err := tt.Set(jwt.SubjectKey, userUUID.String())
+	err := tt.Set(jwt.SubjectKey, userID)
 	ts.Require().NoError(err)
 	token, err := jwt.Sign(tt, jwt.WithKey(ts.privKey.Algorithm(), ts.privKey))
 	ts.Require().NoError(err)
@@ -123,18 +123,18 @@ func (ts *AuthServiceTestSuite) TestAuthenticateUser_Valid_UserNotFound() {
 
 func (ts *AuthServiceTestSuite) TestAuthenticateUser_Valid_UserFound() {
 	ctx := context.Background()
-	userUUID := uuid.Must(uuid.NewV4())
-	ts.users.On("GetUser", ctx, userUUID).Return(&users.User{UUID: userUUID}, nil)
+	userID := uuid.Must(uuid.NewV4()).String()
+	ts.users.On("GetUser", ctx, userID).Return(&users.User{ID: userID}, nil)
 
 	tt := jwt.New()
-	err := tt.Set(jwt.SubjectKey, userUUID.String())
+	err := tt.Set(jwt.SubjectKey, userID)
 	ts.Require().NoError(err)
 	token, err := jwt.Sign(tt, jwt.WithKey(ts.privKey.Algorithm(), ts.privKey))
 	ts.Require().NoError(err)
 
 	user, err := ts.srv.AuthenticateUser(ctx, string(token))
 	ts.Require().NoError(err)
-	ts.Equal(userUUID, user.UUID)
+	ts.Equal(userID, user.ID)
 }
 
 func TestAuthService(t *testing.T) {

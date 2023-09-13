@@ -34,7 +34,7 @@ func (h *handler) account(c *gin.Context) (*accounts.Account, error) {
 		return nil, err
 	}
 	u := h.user(c)
-	if acc.User.UUID != u.UUID {
+	if acc.User.ID != u.ID {
 		return nil, ErrResourceNotFound
 	}
 	return acc, nil

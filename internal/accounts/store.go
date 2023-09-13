@@ -64,7 +64,7 @@ func (s *gormStore) GetAccount(ctx context.Context, UUID uuid.UUID) (*Account, e
 
 func (s *gormStore) GetUserAccounts(ctx context.Context, u *users.User) (AccountCollection, error) {
 	accs := make(AccountCollection, 0)
-	if err := s.db.WithContext(ctx).Find(&accs, "user_uuid = ?", u.UUID).Error; err != nil {
+	if err := s.db.WithContext(ctx).Find(&accs, "user_id = ?", u.ID).Error; err != nil {
 		return nil, err
 	}
 	return accs, nil
@@ -103,7 +103,7 @@ func (s *gormStore) GetAccountAmounts(ctx context.Context, acc *Account, month s
 	amounts := make(AmountCollection, 0)
 	for _, curr := range currencies {
 		amount, err := s.GetAccountAmount(ctx, acc, month, curr)
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			continue
 		}
 		if err != nil {

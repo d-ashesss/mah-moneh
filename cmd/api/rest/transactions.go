@@ -54,7 +54,7 @@ func (h *handler) transaction(c *gin.Context) (*transactions.Transaction, error)
 	if err != nil {
 		return nil, err
 	}
-	if tx.User.UUID != h.user(c).UUID {
+	if tx.User.ID != h.user(c).ID {
 		return nil, ErrResourceNotFound
 	}
 	return tx, nil

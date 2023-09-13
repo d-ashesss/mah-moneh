@@ -34,7 +34,7 @@ func (h *handler) category(c *gin.Context) (*categories.Category, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cat.User.UUID != h.user(c).UUID {
+	if cat.User.ID != h.user(c).ID {
 		return nil, ErrResourceNotFound
 	}
 	return cat, err

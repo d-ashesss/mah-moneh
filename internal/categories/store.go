@@ -46,7 +46,7 @@ func (s *gormStore) GetCategory(ctx context.Context, UUID uuid.UUID) (*Category,
 
 func (s *gormStore) GetUserCategories(ctx context.Context, u *users.User) ([]*Category, error) {
 	cats := make([]*Category, 0)
-	if err := s.db.WithContext(ctx).Where("user_uuid", u.UUID).Find(&cats).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("user_id", u.ID).Find(&cats).Error; err != nil {
 		return nil, err
 	}
 	return cats, nil

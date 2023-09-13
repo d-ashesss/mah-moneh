@@ -176,7 +176,7 @@ func (ts *TransactionsIntegrationTestSuite) TestGetUserTransactions() {
 func (ts *TransactionsIntegrationTestSuite) createTestingUser() *users.User {
 	ts.T().Helper()
 	UUID, _ := uuid.NewV4()
-	return &users.User{UUID: UUID}
+	return &users.User{ID: UUID.String()}
 }
 
 func TestTransactionsIntegration(t *testing.T) {

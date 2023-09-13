@@ -155,7 +155,7 @@ func (ts *RESTTestSuite) NewAuth() Auth {
 	}
 	return Auth{
 		UUID:  UUID,
-		user:  &users.User{UUID: UUID},
+		user:  &users.User{ID: UUID.String()},
 		token: string(token),
 	}
 }

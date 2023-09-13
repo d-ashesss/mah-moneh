@@ -46,7 +46,7 @@ func (s *gormStore) GetTransaction(ctx context.Context, uuid uuid.UUID) (*Transa
 
 func (s *gormStore) GetUserTransactions(ctx context.Context, u *users.User, month string) (TransactionCollection, error) {
 	txs := make(TransactionCollection, 0)
-	err := s.db.WithContext(ctx).Preload("Category").Where("user_uuid = ?", u.UUID).Where("year_month = ?", month).Find(&txs).Error
+	err := s.db.WithContext(ctx).Preload("Category").Where("user_id = ?", u.ID).Where("year_month = ?", month).Find(&txs).Error
 	if err != nil {
 		return nil, err
 	}

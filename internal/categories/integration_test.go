@@ -100,7 +100,7 @@ func (ts *CategoriesIntegrationTestSuite) TestGetUserCategories() {
 func (ts *CategoriesIntegrationTestSuite) createTestingUser() *users.User {
 	ts.T().Helper()
 	UUID, _ := uuid.NewV4()
-	return &users.User{UUID: UUID}
+	return &users.User{ID: UUID.String()}
 }
 
 func TestCategoriesIntegration(t *testing.T) {

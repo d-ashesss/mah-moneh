@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/users"
-	"github.com/gofrs/uuid"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"io"
@@ -15,7 +14,7 @@ import (
 )
 
 type UsersService interface {
-	GetUser(ctx context.Context, UUID uuid.UUID) (*users.User, error)
+	GetUser(ctx context.Context, ID string) (*users.User, error)
 }
 
 type openidConfiguration struct {
@@ -81,9 +80,8 @@ func (s *Service) AuthenticateUser(ctx context.Context, token string) (*users.Us
 	if err != nil {
 		return nil, err
 	}
-	UUID, err := uuid.FromString(t.Subject())
-	if err != nil {
-		return nil, fmt.Errorf("invalid auth payload: %s", err)
+	if t.Subject() == "" {
+		return nil, fmt.Errorf("invalid auth payload")
 	}
-	return s.users.GetUser(ctx, UUID)
+	return s.users.GetUser(ctx, t.Subject())
 }

@@ -48,7 +48,7 @@ func (ts *AccountsIntegrationTestSuite) TestCreateAccount() {
 	ts.Require().NoError(err, "Failed to create account.")
 
 	foundAcc := &accounts.Account{}
-	err = ts.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
+	err = ts.db.First(foundAcc, "user_id = ? AND name = ?", u.ID, acc.Name).Error
 	ts.Require().NoError(err, "Failed to find the created account.")
 	ts.Equal(acc.UUID, foundAcc.UUID)
 }
@@ -63,7 +63,7 @@ func (ts *AccountsIntegrationTestSuite) TestUpdateAccount() {
 		ts.Require().NoError(err, "Failed to update account.")
 
 		foundAcc := &accounts.Account{}
-		err = ts.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
+		err = ts.db.First(foundAcc, "user_id = ? AND name = ?", u.ID, acc.Name).Error
 		ts.Require().NoError(err, "Failed to find the updated account.")
 		ts.Equal(acc.UUID, foundAcc.UUID)
 	})
@@ -76,7 +76,7 @@ func (ts *AccountsIntegrationTestSuite) TestUpdateAccount() {
 		ts.Require().NoError(err, "Failed to update account.")
 
 		foundAcc := &accounts.Account{}
-		err = ts.db.First(foundAcc, "user_uuid = ? AND name = ?", u.UUID, acc.Name).Error
+		err = ts.db.First(foundAcc, "user_id = ? AND name = ?", u.ID, acc.Name).Error
 		ts.Require().ErrorIs(err, gorm.ErrRecordNotFound, "Non existing account was saved during the update.")
 	})
 }
@@ -246,7 +246,7 @@ func (ts *AccountsIntegrationTestSuite) TestGetAccountCurrentAmounts() {
 func (ts *AccountsIntegrationTestSuite) createTestingUser() *users.User {
 	ts.T().Helper()
 	UUID, _ := uuid.NewV4()
-	return &users.User{UUID: UUID}
+	return &users.User{ID: UUID.String()}
 }
 
 func (ts *AccountsIntegrationTestSuite) createTestingAccount(u *users.User, name string) *accounts.Account {
