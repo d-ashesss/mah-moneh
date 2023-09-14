@@ -40,7 +40,10 @@ func NewHandler(
 	}
 
 	r := gin.New()
+	r.HandleMethodNotAllowed = true
 	r.Use(gin.Logger(), gin.CustomRecoveryWithWriter(nil, h.handleRecovery))
+	r.NoRoute(h.notFound)
+	r.NoMethod(h.methodNotAllowed)
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		_ = v.RegisterValidation("yearmonth", validateYearMonth)

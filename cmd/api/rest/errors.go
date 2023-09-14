@@ -78,3 +78,11 @@ func (h *handler) handleRecovery(c *gin.Context, err any) {
 	c.JSON(http.StatusInternalServerError, NewErrorResponse(nil))
 	log.Printf("[APP] Panic recovered: %v", err)
 }
+
+func (h *handler) notFound(c *gin.Context) {
+	c.JSON(http.StatusNotFound, NewErrorResponse("Not found"))
+}
+
+func (h *handler) methodNotAllowed(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, NewErrorResponse("Method not allowed"))
+}
