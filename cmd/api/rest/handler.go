@@ -7,6 +7,7 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/d-ashesss/mah-moneh/internal/users"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -25,6 +26,7 @@ type handler struct {
 }
 
 func NewHandler(
+	cfg *Config,
 	auth *auth.Service,
 	accounts *accounts.Service,
 	categories *categories.Service,
@@ -42,6 +44,16 @@ func NewHandler(
 	r := gin.New()
 	r.HandleMethodNotAllowed = true
 	r.Use(gin.Logger(), gin.CustomRecoveryWithWriter(nil, h.handleRecovery))
+
+	corsCfg := cors.DefaultConfig()
+	if len(cfg.AllowedOrigins) > 0 {
+		corsCfg.AllowOrigins = cfg.AllowedOrigins
+		corsCfg.AllowCredentials = true
+	} else {
+		corsCfg.AllowAllOrigins = true
+	}
+	r.Use(cors.New(corsCfg))
+
 	r.NoRoute(h.notFound)
 	r.NoMethod(h.methodNotAllowed)
 

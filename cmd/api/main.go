@@ -46,7 +46,9 @@ func main() {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
+	handlerCfg := rest.NewConfig()
 	handler := rest.NewHandler(
+		handlerCfg,
 		authService,
 		accountsService,
 		categoriesService,

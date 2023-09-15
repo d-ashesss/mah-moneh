@@ -3,6 +3,7 @@ module github.com/d-ashesss/mah-moneh
 go 1.20
 
 require (
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/gofrs/uuid v4.3.0+incompatible

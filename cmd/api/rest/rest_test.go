@@ -125,7 +125,9 @@ func (ts *RESTTestSuite) SetupSuite() {
 		log.Fatalf("Failed to run DB migration: %s", err)
 	}
 
+	handlerCfg := rest.NewConfig()
 	ts.handler = rest.NewHandler(
+		handlerCfg,
 		authService,
 		ts.accountsService,
 		ts.categoriesService,

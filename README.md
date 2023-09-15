@@ -21,3 +21,4 @@ The configuration is done via environment variables. The following variables are
 * `DB_PASSWORD` - database user's password, required
 * `DB_DEBUG` - whether to use the database in debug mode
 * `AUTH_OPENID_CONFIGURATION_URL` - OpenID configuration URL for OIDC provider.
+* `CORS_ALLOWED_ORIGINS` - semicolon-separated list of allowed origing
