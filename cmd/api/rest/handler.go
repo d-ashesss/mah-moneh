@@ -7,11 +7,11 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/d-ashesss/mah-moneh/internal/users"
+	"github.com/d-ashesss/mah-moneh/log"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -99,7 +99,7 @@ func (h *handler) authenticate(c *gin.Context) {
 
 	user, err := h.auth.AuthenticateUser(c, token)
 	if err != nil {
-		log.Printf("[HTTP] Unauthorized request: %s", err)
+		log.Warningf("[HTTP] Unauthorized request: %s", err)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, NewErrorResponse(http.StatusText(http.StatusUnauthorized)))
 		return
 	}

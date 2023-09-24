@@ -10,12 +10,10 @@ import (
 	"github.com/d-ashesss/mah-moneh/internal/spendings"
 	"github.com/d-ashesss/mah-moneh/internal/transactions"
 	"github.com/d-ashesss/mah-moneh/internal/users"
-	"log"
+	"github.com/d-ashesss/mah-moneh/log"
 )
 
 func main() {
-	log.SetFlags(0)
-
 	dbCfg, err := datastore.NewConfig()
 	if err != nil {
 		log.Fatalf("Invalid database config: %s", err)

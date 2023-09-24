@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/users"
+	"github.com/d-ashesss/mah-moneh/log"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -35,7 +35,7 @@ func NewService(cfg *Config, usersSrv UsersService) *Service {
 		}
 
 		if openidCfg.JwksUri != "" {
-			log.Printf("[AUTH] Fetching keys from %s", openidCfg.JwksUri)
+			log.Infof("[AUTH] Fetching keys from %s", openidCfg.JwksUri)
 			set, err = jwk.Fetch(context.Background(), openidCfg.JwksUri)
 			if err != nil {
 				panic(err)

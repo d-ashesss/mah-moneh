@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/d-ashesss/mah-moneh/internal/datastore"
+	"github.com/d-ashesss/mah-moneh/log"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"log"
 	"net/http"
 )
 
@@ -69,14 +69,14 @@ func (h *handler) handleError(c *gin.Context, err error) {
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, NewErrorResponse(nil))
-		log.Printf("[APP] Unexpected error: %v", err)
+		log.Criticalf("[APP] Absolutely unexpected error: %v", err)
 		return
 	}
 }
 
 func (h *handler) handleRecovery(c *gin.Context, err any) {
 	c.JSON(http.StatusInternalServerError, NewErrorResponse(nil))
-	log.Printf("[APP] Panic recovered: %v", err)
+	log.Criticalf("[APP] Panic recovered: %v", err)
 }
 
 func (h *handler) notFound(c *gin.Context) {
