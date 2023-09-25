@@ -1,0 +1,140 @@
+openapi: "3.1.0"
+info:
+  title: "Mah-Moneh"
+  summary: "Personal finance management API"
+  version: 0.5.0
+  license:
+    name: "MIT"
+    url: "https://opensource.org/license/mit/"
+servers:
+  - url: "http://localhost:60000"
+    description: "Development Server"
+paths:
+  "/accounts":
+    get:
+      summary: List existing accounts
+      tags:
+        - account
+      responses:
+        "200":
+          description: The list of existing accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create new account
+      tags:
+        - account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        "201":
+          description: Account was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+  "/accounts/{uuid}":
+    put:
+      summary: Update existing account
+      tags:
+        - account
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID of the account
+          required: true
+          schema:
+            type: string
+            format: UUID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        "200":
+          description: Account was successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        "404":
+          description: Account was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+    delete:
+      summary: Delete existing account
+      tags:
+        - account
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID of the account
+          required: true
+          schema:
+            type: string
+            format: UUID
+      responses:
+        "200":
+          description: Account was successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        "404":
+          description: Account was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: UUID
+          examples:
+            - "2cded539-3404-497b-b236-81a58048f015"
+        name:
+          type: string
+          examples:
+            - "cash"
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          examples:
+            - "Invalid request input"
+            - "Not found"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
