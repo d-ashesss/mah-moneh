@@ -111,6 +111,86 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - bearerAuth: []
+  "/accounts/{uuid}/amounts/{month}":
+    get:
+      summary: Get account amounts per currency for a specific month
+      tags:
+        - account
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID of the account
+          required: true
+          schema:
+            type: string
+            format: UUID
+        - name: month
+          in: path
+          description: Month of the year in format `YYYY-MM`
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A hash map of account amounts per currency
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  USD:
+                    type: number
+                    format: float
+                examples:
+                  - USD: 50
+                    EUR: 93.75
+        "404":
+          description: Account was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+    put:
+      summary: Set account amounts per currency for a specific month
+      tags:
+        - account
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID of the account
+          required: true
+          schema:
+            type: string
+            format: UUID
+        - name: month
+          in: path
+          description: Month of the year in format `YYYY-MM`
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountAmount'
+      responses:
+        "200":
+          description: Account amount was successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        "404":
+          description: Account was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
 components:
   schemas:
     Account:
@@ -125,6 +205,19 @@ components:
           type: string
           examples:
             - "cash"
+    AccountAmount:
+      type: object
+      properties:
+        currency:
+          type: string
+          format: currency_code
+          examples:
+            - "USD"
+        amount:
+          type: number
+          format: float
+          examples:
+            - 54.95
     Error:
       type: object
       properties:
