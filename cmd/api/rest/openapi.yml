@@ -111,6 +111,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - bearerAuth: []
+
   "/accounts/{uuid}/amounts/{month}":
     get:
       summary: Get account amounts per currency for a specific month
@@ -191,6 +192,77 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - bearerAuth: []
+
+  "/categories":
+    get:
+      summary: List existing categories
+      tags:
+        - category
+      responses:
+        "200":
+          description: List of existing categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create a new category
+      tags:
+        - category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        "201":
+          description: Category was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+  "/categories/{uuid}":
+    delete:
+      summary: Delete a category
+      tags:
+        - category
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID of the category
+          required: true
+          schema:
+            type: string
+            format: UUID
+      responses:
+        "200":
+          description: Category was successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        "404":
+          description: Category was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
 components:
   schemas:
     Account:
@@ -218,6 +290,18 @@ components:
           format: float
           examples:
             - 54.95
+    Category:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: UUID
+          examples:
+            - "49695d12-2fb9-499f-9631-e6a5aca9ba98"
+        name:
+          type: string
+          examples:
+            - "groceries"
     Error:
       type: object
       properties:
