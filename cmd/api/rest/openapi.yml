@@ -131,6 +131,7 @@ paths:
           required: true
           schema:
             type: string
+            format: 'YYYY-MM'
       responses:
         "200":
           description: A hash map of account amounts per currency
@@ -263,6 +264,77 @@ paths:
       security:
         - bearerAuth: []
 
+  "/transactions":
+    post:
+      summary: Create new transaction
+      tags:
+        - transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        "201":
+          description: Transaction was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+  "/transactions/{month}":
+    get:
+      summary: Get all transactions for specific month
+      tags:
+        - transaction
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+      security:
+        - bearerAuth: []
+  "/transactions/{uuid}":
+    delete:
+      summary: Delete a transaction
+      tags:
+        - transaction
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID of the transaction
+          required: true
+          schema:
+            type: string
+            format: UUID
+      responses:
+        "200":
+          description: Transaction was successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        "404":
+          description: Transaction was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
 components:
   schemas:
     Account:
@@ -282,7 +354,7 @@ components:
       properties:
         currency:
           type: string
-          format: currency_code
+          format: currency code
           examples:
             - "USD"
         amount:
@@ -302,6 +374,38 @@ components:
           type: string
           examples:
             - "groceries"
+    Transaction:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: UUID
+          examples:
+            - "5054a67e-63fc-4d45-856d-dd9228e40add"
+        month:
+          type: string
+          format: 'YYYY-MM'
+          examples:
+            - "2020-01"
+        currency:
+          type: string
+          format: currency code
+          examples:
+            - "USD"
+        amount:
+          type: number
+          format: float
+          examples:
+            - -45.95
+        description:
+          type: string
+          examples:
+            - "new guitar"
+        category_uuid:
+          type: string
+          format: UUID
+          examples:
+            - "49695d12-2fb9-499f-9631-e6a5aca9ba98"
     Error:
       type: object
       properties:
