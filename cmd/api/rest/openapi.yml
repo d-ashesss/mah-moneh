@@ -172,6 +172,7 @@ paths:
           required: true
           schema:
             type: string
+            format: 'YYYY-MM'
       requestBody:
         content:
           application/json:
@@ -332,6 +333,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+  "/spendings/{month}":
+    get:
+      summary: Get spendings per category per currency for a specific month
+      description: |
+        The response will contain a hash map of category UUIDs with amounts spent in this category for each currency.
+        
+        Special categories are:
+        * `uncategorized` - sum of all transactions without a category.
+        * `unaccounted` - difference between changes on all accounts and sum of all transactions
+        (basically it contains all spendings that were not entered as transactions).
+      tags:
+        - spendings
+      parameters:
+        - name: month
+          in: path
+          description: Month of the year in format `YYYY-MM`
+          required: true
+          schema:
+            type: string
+            format: "YYYY-MM"
+      responses:
+        "200":
+          description: Spendings for the month
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uncategorized:
+                    type: object
+                    properties:
+                      USD:
+                        type: number
+                        format: float
+                  unaccounted:
+                    type: object
+                    properties:
+                      USD:
+                        type: number
+                        format: float
+                examples:
+                  - uncategorized:
+                      USD: 105.5
+                    unaccounted:
+                      USD: 0
+                    "49695d12-2fb9-499f-9631-e6a5aca9ba98":
+                      USD: 22.75
       security:
         - bearerAuth: []
 
