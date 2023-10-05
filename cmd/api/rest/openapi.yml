@@ -96,13 +96,8 @@ paths:
             type: string
             format: UUID
       responses:
-        "200":
+        "204":
           description: Account was successfully deleted
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
         "404":
           description: Account was not found
           content:
@@ -179,13 +174,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AccountAmount'
       responses:
-        "200":
+        "204":
           description: Account amount was successfully updated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
         "404":
           description: Account was not found
           content:
@@ -249,13 +239,8 @@ paths:
             type: string
             format: UUID
       responses:
-        "200":
+        "204":
           description: Category was successfully deleted
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
         "404":
           description: Category was not found
           content:
@@ -320,13 +305,8 @@ paths:
             type: string
             format: UUID
       responses:
-        "200":
+        "204":
           description: Transaction was successfully deleted
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
         "404":
           description: Transaction was not found
           content:

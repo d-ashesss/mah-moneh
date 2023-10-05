@@ -158,7 +158,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2009-12",
 			Body:   bytes.NewBufferString(`{"currency":"USD","amount":1500}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "bank 2010-01 USD",
@@ -166,7 +166,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-01",
 			Body:   bytes.NewBufferString(`{"currency":"USD","amount":2000}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "cash 2010-01 USD",
@@ -174,7 +174,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-01",
 			Body:   bytes.NewBufferString(`{"currency":"USD","amount":500}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "cash 2010-01 EUR",
@@ -182,7 +182,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-01",
 			Body:   bytes.NewBufferString(`{"currency":"EUR","amount":500}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "cash 2010-02 USD",
@@ -190,7 +190,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-02",
 			Body:   bytes.NewBufferString(`{"currency":"USD","amount":1000}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "cash 2010-02 EUR",
@@ -198,7 +198,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.cash.String() + "/amounts/2010-02",
 			Body:   bytes.NewBufferString(`{"currency":"EUR","amount":0}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "bank 2010-02 USD",
@@ -206,7 +206,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-02",
 			Body:   bytes.NewBufferString(`{"currency":"USD","amount":2200}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "bank 2010-02 EUR",
@@ -214,7 +214,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-02",
 			Body:   bytes.NewBufferString(`{"currency":"EUR","amount":500}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "temp 2010-02 USD",
@@ -222,7 +222,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.temp.String() + "/amounts/2010-02",
 			Body:   bytes.NewBufferString(`{"currency":"USD","amount":150}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 		{
 			Name:   "bank 2010-03 USD",
@@ -230,7 +230,7 @@ func (ts *RESTTestSuite) testSetAccountsAmounts() {
 			Target: "/accounts/" + ts.accounts.bank.String() + "/amounts/2010-03",
 			Body:   bytes.NewBufferString(`{"currency":"USD","amount":2500}`),
 			Auth:   ts.users.main,
-			Code:   http.StatusOK,
+			Code:   http.StatusNoContent,
 		},
 	}
 
@@ -246,7 +246,7 @@ func (ts *RESTTestSuite) testDeleteAccounts() {
 		Target: "/accounts/" + ts.accounts.temp.String(),
 		Body:   nil,
 		Auth:   ts.users.main,
-		Code:   http.StatusOK,
+		Code:   http.StatusNoContent,
 	}
 	ts.testRequest(tt)
 }

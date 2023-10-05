@@ -91,7 +91,7 @@ func (ts *RESTTestSuite) testDeleteCategories() {
 		Target: "/categories/" + ts.categories.temp.String(),
 		Body:   nil,
 		Auth:   ts.users.main,
-		Code:   http.StatusOK,
+		Code:   http.StatusNoContent,
 	}
 	ts.testRequest(tt)
 }

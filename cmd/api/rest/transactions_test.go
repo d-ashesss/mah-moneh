@@ -236,7 +236,7 @@ func (ts *RESTTestSuite) testDeleteTransactions() {
 		Target: "/transactions/" + ts.transactions.temp.String(),
 		Body:   nil,
 		Auth:   ts.users.main,
-		Code:   http.StatusOK,
+		Code:   http.StatusNoContent,
 	}
 	ts.testRequest(tt)
 }

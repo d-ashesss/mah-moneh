@@ -95,5 +95,5 @@ func (h *handler) handleCategoriesDelete(c *gin.Context) {
 		h.handleError(c, fmt.Errorf("failed to delete category: %w", err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }

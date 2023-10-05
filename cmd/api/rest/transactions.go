@@ -135,5 +135,5 @@ func (h *handler) handleTransactionsDelete(c *gin.Context) {
 		h.handleError(c, fmt.Errorf("failed to delete transaction: %w", err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }

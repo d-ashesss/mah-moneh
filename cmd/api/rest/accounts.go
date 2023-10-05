@@ -114,7 +114,7 @@ func (h *handler) handleAccountsDelete(c *gin.Context) {
 		h.handleError(c, fmt.Errorf("failed to delete account: %w", err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }
 
 type AccountAmountMonthInput struct {
@@ -155,14 +155,14 @@ func (h *handler) handleAccountAmountSet(c *gin.Context) {
 			h.handleError(c, fmt.Errorf("failed to set account amount: %w", err))
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{})
+		c.Status(http.StatusNoContent)
 		return
 	}
 	if err = h.accounts.SetAccountAmount(c, acc, monthInput.Month, input.Currency, input.Amount); err != nil {
 		h.handleError(c, fmt.Errorf("failed to set account amount: %w", err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }
 
 func (h *handler) handleAccountAmountGet(c *gin.Context) {
